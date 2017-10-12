@@ -39,7 +39,13 @@ Main.Stage1.prototype = {
 			this.game.width,
 			this.game.cache.getImage('sky').height,
 			'sky'
-		);     
+		);         
+		this.cityFar = this.game.add.tileSprite(0,
+			(this.game.height - this.game.cache.getImage('city-far').height)/2,
+			this.game.width,
+			this.game.cache.getImage('city-far').height,
+			'city-far'
+		);   
 		this.cityMid = this.game.add.tileSprite(0,
 			(this.game.height - this.game.cache.getImage('city-mid').height)/2,
 			this.game.width,
@@ -73,7 +79,8 @@ Main.Stage1.prototype = {
 	},
 	updateBackground : function(){
 		this.sky.tilePosition.x += 0.1	;
-	    this.cityMid.tilePosition.x -= 0.25	;
-	    this.cityFront.tilePosition.x -= 0.5;
+	    this.cityMid.tilePosition.x -= 0.2	;
+	    this.cityFront.tilePosition.x -= 0.4;
+	    this.cityFar.tilePosition.x -= 0.1;
 	}
 };
