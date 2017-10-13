@@ -27,6 +27,8 @@ Main.Stage1.prototype = {
 
 		//camera settings
 		this.adjustCamera();
+		this.game.stage.smoothed=false;
+
 	},
 	adjustStageWorld: function(stageLength){
 		this.game.world.setBounds(0, 0, stageLength, this.game.height);
@@ -34,11 +36,17 @@ Main.Stage1.prototype = {
   	createBackground: function(){
   		this.game.stage.backgroundColor = "#000";
 
-		this.sky = this.game.add.tileSprite(0,
-			(this.game.height - this.game.cache.getImage('sky').height)/2,
+		this.background = this.game.add.tileSprite(0,
+			(this.game.height - this.game.cache.getImage('background').height)/2,
 			this.game.width,
-			this.game.cache.getImage('sky').height,
-			'sky'
+			this.game.cache.getImage('background').height,
+			'background'
+		);    
+		this.clouds = this.game.add.tileSprite(0,
+			(this.game.height - this.game.cache.getImage('clouds').height)/2,
+			this.game.width,
+			this.game.cache.getImage('clouds').height,
+			'clouds'
 		);         
 		this.cityFar = this.game.add.tileSprite(0,
 			(this.game.height - this.game.cache.getImage('city-far').height)/2,
@@ -78,9 +86,10 @@ Main.Stage1.prototype = {
 		this.updateBackground();
 	},
 	updateBackground : function(){
-		this.sky.tilePosition.x += 0.1	;
+		this.background.tilePosition.x +=0.02
+		this.clouds.tilePosition.x += 0.1	;
+	    this.cityFar.tilePosition.x -= 0.1;
 	    this.cityMid.tilePosition.x -= 0.2	;
 	    this.cityFront.tilePosition.x -= 0.4;
-	    this.cityFar.tilePosition.x -= 0.1;
 	}
 };
