@@ -10,6 +10,7 @@ Main.Preload.prototype = {
     this.game.load.image('city-mid', 'assets/images/city-mid.png');
     this.game.load.image('clouds', 'assets/images/clouds.png');
     this.game.load.image('background', 'assets/images/background.png');
+    this.game.load.spritesheet('car-driving', 'assets/images/car2.png', 50, 15, 2);
   },
   
   create : function() {

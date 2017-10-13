@@ -22,6 +22,8 @@ Main.Stage1.prototype = {
 		//create stage background
 		this.createBackground();
 
+		this.createActors();
+
 		//bring to front all important elements
 		//this.orderStageElements();
 
@@ -32,6 +34,13 @@ Main.Stage1.prototype = {
 	},
 	adjustStageWorld: function(stageLength){
 		this.game.world.setBounds(0, 0, stageLength, this.game.height);
+	},
+	createActors : function (){
+		this.car = this.game.add.sprite(20, (this.game.height)/2,'car-driving');
+		this.car.animations.add('drive');
+		this.car.animations.play('drive', 5, true);
+		
+		this.add.tween(this.car).to({ x:10}, 4000, Phaser.Easing.Exponential.Out, true, 2, 1000, true);
 	},
   	createBackground: function(){
   		this.game.stage.backgroundColor = "#000";
@@ -68,6 +77,14 @@ Main.Stage1.prototype = {
 		);     
 
   	},
+  	orderStageElements: function() {
+	    this.game.world.bringToTop(this.background);
+	    this.game.world.bringToTop(this.clouds);
+	    this.game.world.bringToTop(this.cityFar);
+	    this.game.world.bringToTop(this.cityMid);
+	    this.game.world.bringToTop(this.cityFront);
+	    this.game.world.bringToTop(this.car);
+	},
   	createSprites : function(stageLength){},
   	addPhisicsToElements: function(gravity){
   		this.game.physics.arcade.enable(this.player);
