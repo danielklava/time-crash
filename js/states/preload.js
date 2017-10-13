@@ -4,6 +4,13 @@ Main.Preload = function (){};
 
 Main.Preload.prototype = {
   preload : function() {
+<<<<<<< HEAD
+=======
+    this.game.load.image('headphones', 'assets/images/headphones.jpg');
+    this.game.load.image('mountains-back', 'assets/images/mountains-back.png');
+    this.game.load.image('mountains-mid1', 'assets/images/mountains-mid1.png');
+    this.game.load.image('mountains-mid2', 'assets/images/mountains-mid2.png');
+>>>>>>> f5578260a28d471257a0f775a7c89fe88c39429f
     this.game.load.image('city-far', 'assets/images/city-far.png');
     this.game.load.image('city-front', 'assets/images/city-front.png');
     this.game.load.image('city-mid', 'assets/images/city-mid.png');
