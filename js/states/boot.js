@@ -13,7 +13,7 @@ Main.Boot.prototype = {
 
 		this.scale.setUserScale(4,4);
 
-		this.game.renderer.renderSession.roundPixels=true;
+		//this.game.renderer.renderSession.roundPixels=true;
 		Phaser.Canvas.setImageRenderingCrisp(this.game.canvas);
 
 		this.scale.pageAlignHorizontally = true;
