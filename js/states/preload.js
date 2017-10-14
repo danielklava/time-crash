@@ -9,8 +9,12 @@ Main.Preload.prototype = {
     this.game.load.image('city-front', 'assets/images/city-front.png');
     this.game.load.image('city-mid', 'assets/images/city-mid.png');
     this.game.load.image('clouds', 'assets/images/clouds.png');
+    this.game.load.image('fence', 'assets/images/fence.png');
     this.game.load.image('background', 'assets/images/background.png');
-    this.game.load.spritesheet('car-driving', 'assets/images/car2.png', 50, 15, 2);
+    this.game.load.image('road', 'assets/images/road.png');
+    this.game.load.image('menu-start', 'assets/images/menu-start.png');
+
+    this.game.load.spritesheet('car-driving', 'assets/images/car-sheet.png', 70, 18, 2);
   },
   
   create : function() {

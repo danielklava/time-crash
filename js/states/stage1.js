@@ -31,16 +31,22 @@ Main.Stage1.prototype = {
 		this.adjustCamera();
 		this.game.stage.smoothed=false;
 
+		this.addMenuOptions();
+
+	},
+	addMenuOptions : function() {
+		this.menuStart = this.game.add.sprite(110, 70,'menu-start');
 	},
 	adjustStageWorld: function(stageLength){
 		this.game.world.setBounds(0, 0, stageLength, this.game.height);
 	},
 	createActors : function (){
-		this.car = this.game.add.sprite(20, (this.game.height)/2,'car-driving');
+		this.car = this.game.add.sprite(00, 52,'car-driving');
 		this.car.animations.add('drive');
 		this.car.animations.play('drive', 5, true);
 		
-		this.add.tween(this.car).to({ x:10}, 4000, Phaser.Easing.Exponential.Out, true, 2, 1000, true);
+		this.add.tween(this.car).to({ x:7, y: 50}, 2000, Phaser.Easing.Cubic.InOut, true, 1, 1000, true);
+		//this.add.tween(this.car).to({ x:17, y: 51}, 2000, Phaser.Easing.Cubic.InOut, true, 1, 1000, true);
 	},
   	createBackground: function(){
   		this.game.stage.backgroundColor = "#000";
@@ -74,7 +80,14 @@ Main.Stage1.prototype = {
 			this.game.width,
 			this.game.cache.getImage('city-front').height,
 			'city-front'
-		);     
+		);
+		this.fence = this.game.add.tileSprite(0, 30,this.game.width, this.game.cache.getImage('fence').height, 'fence');     
+		this.road = this.game.add.tileSprite(0,
+			(this.game.height - this.game.cache.getImage('road').height)/2,
+			this.game.width,
+			this.game.cache.getImage('road').height,
+			'road'
+		);    
 
   	},
   	orderStageElements: function() {
@@ -103,10 +116,12 @@ Main.Stage1.prototype = {
 		this.updateBackground();
 	},
 	updateBackground : function(){
-		this.background.tilePosition.x +=0.04
-		this.clouds.tilePosition.x += 0.1	;
+		this.background.tilePosition.x -=0.02
+		this.clouds.tilePosition.x -= 0.01	;
 	    this.cityFar.tilePosition.x -= 0.05;
 	    this.cityMid.tilePosition.x -= 0.1	;
 	    this.cityFront.tilePosition.x -= 0.2;
+	    this.fence.tilePosition.x -=1;
+	    this.road.tilePosition.x -=1;
 	}
 };
