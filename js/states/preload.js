@@ -42,6 +42,6 @@ Main.Preload.prototype = {
 
   transitionToMenu : function(){
     console.log("go to Stage1");
-    this.state.start('Stage1', true, false);
+    this.state.start('GameTitle', true, false);
   }
 }
