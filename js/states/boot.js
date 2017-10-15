@@ -16,6 +16,8 @@ Main.Boot.prototype = {
 		//this.game.renderer.renderSession.roundPixels=true;
 		Phaser.Canvas.setImageRenderingCrisp(this.game.canvas);
 
+		this.game.renderType = Phaser.CANVAS;
+
 		this.scale.pageAlignHorizontally = true;
 
 		this.game.physics.startSystem(Phaser.Physics.ARCADE);

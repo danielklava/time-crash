@@ -10,29 +10,8 @@ Main.GameTitle.prototype = {
 
 		this.addMenuOptions();
 
-		this.timer = Main.game.time.create();
-		this.timerEvent = this.timer.add(Phaser.Timer.MINUTE * 1, this.endTimer, this);
-		this.timer.start();
-
-		this.timerText = this.game.add.text(5, 5, "00:00",{font: "12px Arial", fill:"#FF0"});
-	},
-	render : function(){
-		if (this.timer.running) {
-			this.timerText.setText(this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000)));
-		}
-		else {
-			this.timerText.setText("Done!", 2, 14, "#0f0");
-		}
-	},
-	endTimer: function() {
-		// Stop the timer when the delayed event triggers
-		this.timer.stop();
-	},
-	formatTime: function(s) {
-		// Convert seconds (s) to a nicely formatted and padded time string
-		var minutes = "0" + Math.floor(s / 60);
-		var seconds = "0" + (s - minutes * 60);
-		return minutes.substr(-2) + ":" + seconds.substr(-2);   
+		this.spacebarButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+		this.enterButton = this.game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
 	},
 	addMenuOptions : function() {
 		this.menuStart = this.game.add.button(this.game.world.right - 40, this.game.world.bottom-10, 'menu-start', this.startCallback, this, 2, 1, 0);
@@ -40,6 +19,16 @@ Main.GameTitle.prototype = {
 		this.menuStart.events.onInputDown.add(this.startCallback, this);
 	},
 	startCallback : function (){
+		this.carLeaves = this.add.tween(this.car).to({ x:200}, 2000, Phaser.Easing.Cubic.InOut, false, 0, 0, false);
+		this.carLeaves.onComplete.add(this.fadeOut, this);		
+		this.carLeaves.start();
+	},
+	fadeOut : function(){
+		this.car.visible=false;
+		this.camera.fade("#000000",500);
+		this.camera.onFadeComplete.add(this.beginGame, this);
+	},
+	beginGame : function (){
 		this.state.start('Stage1');
 	},
 	createActors : function (){
@@ -93,13 +82,17 @@ Main.GameTitle.prototype = {
   	},
 	update: function() {
 		this.updateBackground();
+
+		if (this.spacebarButton.isDown || this.enterButton.isDown){
+			this.startCallback();
+		}
 	},
 	updateBackground : function(){
 		this.background.tilePosition.x -=0.02
 		this.clouds.tilePosition.x -= 0.01	;
-		this.cityFar.tilePosition.x -= 0.05;
-		this.cityMid.tilePosition.x -= 0.1	;
-		this.cityFront.tilePosition.x -= 0.2;
+		this.cityFar.tilePosition.x -= 0.15;
+		this.cityMid.tilePosition.x -= 0.3	;
+		this.cityFront.tilePosition.x -= 0.5;
 		this.fence.tilePosition.x -=1;
 		this.road.tilePosition.x -=1;
 	}

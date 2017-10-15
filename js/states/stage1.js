@@ -4,8 +4,10 @@ Main.Stage1 = function(){};
 Main.Stage1.prototype = {
 	create: function() {
 
-		var gravity = 500;
-		var stageLength = 5000;
+		this.camera.flash("#000000");
+
+		var gravity = 400;
+		var stageLength = 288;
 
 		//Enble Arcade Physics
 		this.physics.startSystem(Phaser.Physics.ARCADE);
@@ -14,8 +16,6 @@ Main.Stage1.prototype = {
 		//stage world settings
 		this.adjustStageWorld(stageLength);
 
-		//create all stage sprites
-		this.createSprites(stageLength);
 		//create stage background
 		this.createBackground();		
 		this.createActors();
@@ -33,13 +33,15 @@ Main.Stage1.prototype = {
 
 		this.cursors = this.game.input.keyboard.createCursorKeys();
 		this.jumpButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
+		this.camera.follow(this.hero, Phaser.Camera.FOLLOW_PLATFORMER, 0.1, 0.1);
 	},
 	render : function(){
 		if (this.timer.running) {
-            this.game.debug.text(this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000)), 2, 14, "#ff0");
+            //this.game.debug.text(this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000)), 2, 14, "#ff0");
         }
         else {
-            this.game.debug.text("Done!", 2, 14, "#0f0");
+            //this.game.debug.text("Done!", 2, 14, "#0f0");
         }
 	},
 	endTimer: function() {
@@ -56,7 +58,6 @@ Main.Stage1.prototype = {
 		this.game.world.setBounds(0, 0, stageLength, this.game.height);
 	},
 	createActors : function (){
-		
   		//creating ground sprite
   		this.ground = this.add.tileSprite(0,this.game.height - 10,this.game.world.width, 10, 'ground');
 		  
@@ -66,6 +67,8 @@ Main.Stage1.prototype = {
 
 		this.hero = this.game.add.sprite(51, 0, 'hero');
 		this.hero.alpha = 0;
+		this.hero.animations.add('walk',[0], 2, true);
+	    this.hero.animations.add('jump',[1], 2, true);
 
 		this.carArrives = this.add.tween(this.car).to({ x:10}, 2000, Phaser.Easing.Cubic.InOut, true, 0, 0, false);
 		this.carArrives.onComplete.add(this.showHero, this);
@@ -122,12 +125,11 @@ Main.Stage1.prototype = {
 	    this.game.world.bringToTop(this.cityFront);
 	    this.game.world.bringToTop(this.car);
 	},
-  	createSprites : function(stageLength){},
   	addPhisicsToElements: function(gravity){
   		this.game.physics.arcade.enable(this.hero);
-	    this.game.physics.arcade.enable(this.ground);
+		this.game.physics.arcade.enable(this.ground);
 
-	    this.ground.body.immovable = true;
+		this.ground.body.immovable = true;
 	    this.ground.body.allowGravity = false;
 
 		this.hero.body.gravity.y = gravity;
@@ -144,25 +146,38 @@ Main.Stage1.prototype = {
 		
 		this.hero.body.velocity.x = 0;
 		
+		if (this.hero.body.velocity.y != 0){
+			this.hero.animations.play('jump');
+		}else{
+			this.hero.animations.play('walk');
+		}
+
 		if (this.cursors.left.isDown)
 		{
 			this.hero.body.velocity.x = -45;
+			if (this.hero.body.velocity.y == 0){
+				this.hero.animations.play('walk');
+			}
 		}
 		else if (this.cursors.right.isDown)
 		{
 			this.hero.body.velocity.x = 45;
+
+			if (this.hero.body.velocity.y == 0){
+				this.hero.animations.play('walk');
+			}
 		}
 
 		if (this.jumpButton.isDown && this.hero.body.touching.down){
 			this.hero.body.velocity.y = -230;
+			this.hero.animations.play('jump');
 		}
-		
 	},
 	updateBackground : function(){
 		this.background.tilePosition.x -= 0.03;
 		this.clouds.tilePosition.x -=  0.05	;
-	    this.cityFar.tilePosition.x = - this.hero.x * 0.2;
-	    this.cityMid.tilePosition.x = -this.hero.x * 0.1	;
-	    this.cityFront.tilePosition.x = - this.hero.x * 0.05;
+	    //this.cityFar.tilePosition.x = - this.hero.x * 0.15;
+	    //this.cityMid.tilePosition.x = -this.hero.x * 0.2;
+	    //this.cityFront.tilePosition.x = - this.hero.x * 0.25;
 	}
 };

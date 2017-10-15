@@ -13,10 +13,14 @@ Main.Preload.prototype = {
     this.game.load.image('background', 'assets/images/background.png');
     this.game.load.image('road', 'assets/images/road.png');
     this.game.load.image('ground', 'assets/images/ground.png');
-    this.game.load.image('hero', 'assets/images/hero.png');
     this.game.load.image('menu-start', 'assets/images/menu-start.png');
 
+    //CAR
+    this.game.load.image('car-idle', 'assets/images/car-idle.png');
     this.game.load.spritesheet('car-driving', 'assets/images/car-sheet.png', 70, 18, 2);
+
+    //HERO
+    this.game.load.spritesheet('hero', 'assets/images/hero.png',16,22, 2);
   },
   
   create : function() {
