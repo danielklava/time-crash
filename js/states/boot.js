@@ -8,8 +8,8 @@ Main.Boot.prototype = {
 
 	},
 
-	create : function() {      
-		this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+	create : function() {
+		this.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
 
 		this.scale.setUserScale(4,4);
 
@@ -17,11 +17,7 @@ Main.Boot.prototype = {
 		this.game.camera.roundPx = false;
 		Phaser.Canvas.setImageRenderingCrisp(this.game.canvas);
 
-		this.game.renderType = Phaser.CANVAS;
-
 		this.scale.pageAlignHorizontally = true;
-
-		this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
 		this.state.start('Preload');
 	}
