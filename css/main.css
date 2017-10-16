@@ -2,13 +2,7 @@ body{
 	background-color: #777;
 }
 #gameArea{
-	width: 50%;
-	height: 50%;
-	margin: 0 auto;
-}
-
-#testingArea{
-	width: 50%;
-	height: 50%;
+	/*width: 50%;
+	height: 50%;*/
 	margin: 0 auto;
 }

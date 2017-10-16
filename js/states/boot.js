@@ -9,12 +9,13 @@ Main.Boot.prototype = {
 	},
 
 	create : function() {      
-		this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+		this.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
 
-		this.scale.setUserScale(4,4);
+		this.scale.setUserScale(3,3);
 
 		//this.game.renderer.renderSession.roundPixels=true;
-		Phaser.Canvas.setImageRenderingCrisp(this.game.canvas);
+
+	    Phaser.Canvas.setImageRenderingCrisp(this.game.canvas);
 
 		this.game.renderType = Phaser.CANVAS;
 

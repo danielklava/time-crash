@@ -42,7 +42,9 @@ Main.Stage1.prototype = {
         }
         else {
             //this.game.debug.text("Done!", 2, 14, "#0f0");
-        }
+		}
+		
+		this.game.debug.text("X,Y: " + this.hero.x + "," + this.hero.y, 2,14, "red", "Arial 10px");
 	},
 	endTimer: function() {
         // Stop the timer when the delayed event triggers
@@ -65,8 +67,8 @@ Main.Stage1.prototype = {
 		this.car.animations.add('drive');
 		this.car.animations.play('drive', 5, true);
 
-		this.hero = this.game.add.sprite(51, 0, 'hero');
-		this.hero.alpha = 0;
+		this.hero = this.game.add.sprite(80, 20, 'hero');
+		this.hero.alpha = 1;
 		this.hero.animations.add('walk',[0], 2, true);
 	    this.hero.animations.add('jump',[1], 2, true);
 
@@ -169,7 +171,7 @@ Main.Stage1.prototype = {
 		}
 
 		if (this.jumpButton.isDown && this.hero.body.touching.down){
-			this.hero.body.velocity.y = -230;
+			this.hero.body.velocity.y = -200;
 			this.hero.animations.play('jump');
 		}
 	},
