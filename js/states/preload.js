@@ -20,7 +20,7 @@ Main.Preload.prototype = {
     this.game.load.spritesheet('car-driving', 'assets/images/car-sheet.png', 70, 18, 2);
 
     //HERO
-    this.game.load.spritesheet('hero', 'assets/images/hero.png',16,22, 2);
+    this.game.load.spritesheet('hero', 'assets/images/hero.png',14,22, 2);
   },
   
   create : function() {
