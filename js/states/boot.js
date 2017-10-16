@@ -13,7 +13,8 @@ Main.Boot.prototype = {
 
 		this.scale.setUserScale(4,4);
 
-		//this.game.renderer.renderSession.roundPixels=true;
+		this.game.renderer.renderSession.roundPixels = false;
+		this.game.camera.roundPx = false;
 		Phaser.Canvas.setImageRenderingCrisp(this.game.canvas);
 
 		this.game.renderType = Phaser.CANVAS;
