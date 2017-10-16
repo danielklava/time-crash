@@ -33,7 +33,6 @@ Main.Stage1.prototype = {
 
 		this.cursors = this.game.input.keyboard.createCursorKeys();
 		this.jumpButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-		this.jumpButton.onKeyDown.add(this.processJump, this);
 
 		this.camera.follow(this.hero, Phaser.Camera.FOLLOW_PLATFORMER, 0.1, 0.1);
 	},
@@ -68,8 +67,8 @@ Main.Stage1.prototype = {
 		this.car.animations.add('drive');
 		this.car.animations.play('drive', 5, true);
 
-		this.hero = this.game.add.sprite(80, 00, 'hero');
-		this.hero.alpha = 1;
+		this.hero = this.game.add.sprite(80, 0, 'hero');
+		this.hero.alpha = 0;
 		this.hero.animations.add('walk',[0], 2, true);
 	    this.hero.animations.add('jump',[1], 2, true);
 
@@ -170,9 +169,11 @@ Main.Stage1.prototype = {
 				this.hero.animations.play('walk');
 			}
 		}
-	},
-	processJump : function(){
 
+		if (this.jumpButton.isDown && this.hero.body.touching.down){
+			this.hero.body.velocity.y = -200;
+			this.hero.animations.play('jump');
+		}
 	},
 	updateBackground : function(){
 		this.background.tilePosition.x -= 0.03;
