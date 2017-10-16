@@ -1,6 +1,12 @@
 var Main = Main || {};
 
-Main.game = new Phaser.Game(144,81, Phaser.CANVAS, 'gameArea');
+Main.game = new Phaser.Game({
+  width: 144,
+  height: 81,
+  renderer: Phaser.CANVAS,
+  parent: 'gameArea',
+  antialias: false
+});
 
 Main.game.state.add('Boot', Main.Boot);
 Main.game.state.add('Preload', Main.Preload);
