@@ -3,7 +3,6 @@ Main.Stage1 = function(){};
  
 Main.Stage1.prototype = {
 	create: function() {
-
 		this.camera.flash("#000000");
 
 		var gravity = 400;
@@ -17,7 +16,8 @@ Main.Stage1.prototype = {
 		this.adjustStageWorld(stageLength);
 
 		//create stage background
-		this.createBackground();		
+		this.createBackground();
+		this.createObjects();	
 		this.createActors();
 		
 		//add phisics to elements (oh, really?)
@@ -38,13 +38,11 @@ Main.Stage1.prototype = {
 	},
 	render : function(){
 		if (this.timer.running) {
-            //this.game.debug.text(this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000)), 2, 14, "#ff0");
+            this.game.debug.text(this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000)), 2, 14, "#ff0");
         }
         else {
-            //this.game.debug.text("Done!", 2, 14, "#0f0");
+            this.game.debug.text("Done!", 2, 14, "#0f0");
 		}
-		
-		this.game.debug.text("X,Y: " + this.hero.x + "," + this.hero.y, 2,14, "red", "Arial 10px");
 	},
 	endTimer: function() {
         // Stop the timer when the delayed event triggers
@@ -62,7 +60,7 @@ Main.Stage1.prototype = {
 	createActors : function (){
   		//creating ground sprite
   		this.ground = this.add.tileSprite(0,this.game.height - 10,this.game.world.width, 10, 'ground');
-		  
+
 		this.car = this.game.add.sprite(-100, 52,'car-driving');
 		this.car.animations.add('drive');
 		this.car.animations.play('drive', 5, true);
@@ -70,18 +68,21 @@ Main.Stage1.prototype = {
 		this.hero = this.game.add.sprite(80, 0, 'hero');
 		this.hero.alpha = 0;
 		this.hero.animations.add('walk',[0], 2, true);
-	    this.hero.animations.add('jump',[1], 2, true);
-
+		this.hero.animations.add('jump',[1], 2, true);
+		
 		this.carArrives = this.add.tween(this.car).to({ x:10}, 2000, Phaser.Easing.Cubic.InOut, true, 0, 0, false);
 		this.carArrives.onComplete.add(this.showHero, this);
 		this.carArrives.start();
+	},
+	createObjects : function(){
+		this.container01 = this.game.add.sprite(100,44,'container01');
 	},
 	showHero : function(){
 		this.hero.alpha = 1;
 	},
   	createBackground: function(stageLength){
   		this.game.stage.backgroundColor = "#000";
-
+	
 		this.background = this.game.add.tileSprite(0,
 			(this.game.height - this.game.cache.getImage('background').height)/2,this.game.world.width,
 			this.game.cache.getImage('background').height,'background'
@@ -128,15 +129,19 @@ Main.Stage1.prototype = {
 	    this.game.world.bringToTop(this.car);
 	},
   	addPhisicsToElements: function(gravity){
-  		this.game.physics.arcade.enable(this.hero);
-		this.game.physics.arcade.enable(this.ground);
+  		this.physics.arcade.enable(this.hero);
+		this.physics.arcade.enable(this.ground);
+		this.physics.arcade.enable(this.container01);
+		
+		this.container01.body.immovable=true;
+		this.container01.body.allowGravity=false;
 
 		this.ground.body.immovable = true;
 	    this.ground.body.allowGravity = false;
 
 		this.hero.body.gravity.y = gravity;
 		this.hero.body.collideWorldBounds = true;
-		this.hero.body.setSize(16,22);
+		this.hero.body.setSize(12,20,3,0);
 		this.hero.body.maxVelocity.y = 500;
   	},
   	adjustCamera: function(){
@@ -144,7 +149,8 @@ Main.Stage1.prototype = {
   	},
 	update: function() {
 		this.updateBackground();
-		this.game.physics.arcade.collide(this.hero, this.ground, this.playerHit, null, this);
+		this.physics.arcade.collide(this.hero, this.ground, this.playerHit, null, this);
+		this.physics.arcade.collide(this.hero, this.container01);
 		
 		this.hero.body.velocity.x = 0;
 		

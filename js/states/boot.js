@@ -11,7 +11,7 @@ Main.Boot.prototype = {
 	create : function() {
 		this.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
 
-		this.scale.setUserScale(3,3);
+		this.scale.setUserScale(4,4);
 
 		this.game.renderer.renderSession.roundPixels = false;
 		this.game.camera.roundPx = false;

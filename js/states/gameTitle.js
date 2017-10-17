@@ -5,31 +5,23 @@ Main.GameTitle.prototype = {
 	create: function() {
 
 		this.createBackground();
-
 		this.createActors();
-
 		this.addMenuOptions();
 
 		this.spacebarButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 		this.enterButton = this.game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
 	},
+	update: function() {
+		this.updateBackground();
+
+		if (this.spacebarButton.isDown || this.enterButton.isDown){
+			this.startCallback();
+		}
+	},
 	addMenuOptions : function() {
 		this.menuStart = this.game.add.button(this.game.world.right - 40, this.game.world.bottom-10, 'menu-start', this.startCallback, this, 2, 1, 0);
 		this.menuStart.inputEnabled = true;
 		this.menuStart.events.onInputDown.add(this.startCallback, this);
-	},
-	startCallback : function (){
-		this.carLeaves = this.add.tween(this.car).to({ x:200}, 2000, Phaser.Easing.Cubic.InOut, false, 0, 0, false);
-		this.carLeaves.onComplete.add(this.fadeOut, this);		
-		this.carLeaves.start();
-	},
-	fadeOut : function(){
-		this.car.visible=false;
-		this.camera.fade("#000000",500);
-		this.camera.onFadeComplete.add(this.beginGame, this);
-	},
-	beginGame : function (){
-		this.state.start('Stage1');
 	},
 	createActors : function (){
 		this.car = this.game.add.sprite(00, 52,'car-driving');
@@ -37,7 +29,6 @@ Main.GameTitle.prototype = {
 		this.car.animations.play('drive', 5, true);
 		
 		this.add.tween(this.car).to({ x:7, y: 50}, 2000, Phaser.Easing.Cubic.InOut, true, 1, 1000, true);
-		//this.add.tween(this.car).to({ x:17, y: 51}, 2000, Phaser.Easing.Cubic.InOut, true, 1, 1000, true);
 	},
   	createBackground: function(){
   		this.game.stage.backgroundColor = "#000";
@@ -80,12 +71,18 @@ Main.GameTitle.prototype = {
 			'road'
 		);	
   	},
-	update: function() {
-		this.updateBackground();
-
-		if (this.spacebarButton.isDown || this.enterButton.isDown){
-			this.startCallback();
-		}
+	startCallback : function (){
+		this.carLeaves = this.add.tween(this.car).to({ x:200}, 2000, Phaser.Easing.Cubic.InOut, false, 0, 0, false);
+		this.carLeaves.onComplete.add(this.fadeOut, this);		
+		this.carLeaves.start();
+	},
+	fadeOut : function(){
+		this.car.visible=false;
+		this.camera.fade("#000000",500);
+		this.camera.onFadeComplete.add(this.beginGame, this);
+	},
+	beginGame : function (){
+		this.state.start('Stage1');
 	},
 	updateBackground : function(){
 		this.background.tilePosition.x -=0.02
