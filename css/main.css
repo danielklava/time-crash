@@ -1,8 +1,28 @@
 body{
 	background-color: #777;
+	margin: 0 auto;
 }
 #gameArea{
 	/*width: 50%;
 	height: 50%;*/
 	margin: 0 auto;
+}
+
+#info{
+	max-width: 960px;
+	margin: 0 auto;
+	display: block;
+	text-align: center;
+}
+#info a {
+	display: inline-block;
+	background-color: #999;
+	border: 1px solid #555;
+	padding: 10px 20px;
+	color: #FFF;
+	border-radius: 5px;
+	text-decoration: none;
+}
+#info a:hover{
+	background-color: #AAA;
 }

@@ -61,7 +61,7 @@ Main.Stage1.prototype = {
   		//creating ground sprite
   		this.ground = this.add.tileSprite(0,this.game.height - 10,this.game.world.width, 10, 'ground');
 
-		this.car = this.game.add.sprite(-100, 52,'car-driving');
+		this.car = this.game.add.sprite(-100, 54,'car-driving');
 		this.car.animations.add('drive');
 		this.car.animations.play('drive', 5, true);
 
@@ -111,7 +111,7 @@ Main.Stage1.prototype = {
 			this.game.cache.getImage('city-front').height,
 			'city-front'
 		);
-		this.fence = this.game.add.tileSprite(0, 30, this.game.world.width, this.game.cache.getImage('fence').height, 'fence');     
+		this.fence = this.game.add.tileSprite(0, 37, this.game.world.width, this.game.cache.getImage('fence').height, 'fence');     
 		this.road = this.game.add.tileSprite(0,
 			(this.game.height - this.game.cache.getImage('road').height)/2,
 			this.game.world.width,

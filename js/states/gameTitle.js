@@ -24,11 +24,11 @@ Main.GameTitle.prototype = {
 		this.menuStart.events.onInputDown.add(this.startCallback, this);
 	},
 	createActors : function (){
-		this.car = this.game.add.sprite(00, 52,'car-driving');
+		this.car = this.game.add.sprite(00, 54,'car-driving');
 		this.car.animations.add('drive');
 		this.car.animations.play('drive', 5, true);
 		
-		this.add.tween(this.car).to({ x:7, y: 50}, 2000, Phaser.Easing.Cubic.InOut, true, 1, 1000, true);
+		this.add.tween(this.car).to({ x:7, y: 55}, 2000, Phaser.Easing.Cubic.InOut, true, 1, 1000, true);
 	},
   	createBackground: function(){
   		this.game.stage.backgroundColor = "#000";
@@ -63,7 +63,7 @@ Main.GameTitle.prototype = {
 			this.game.cache.getImage('city-front').height,
 			'city-front'
 		);
-		this.fence = this.game.add.tileSprite(0, 30,this.game.width, this.game.cache.getImage('fence').height, 'fence');	 
+		this.fence = this.game.add.tileSprite(0, 37,this.game.width, this.game.cache.getImage('fence').height, 'fence');	 
 		this.road = this.game.add.tileSprite(0,
 			(this.game.height - this.game.cache.getImage('road').height)/2,
 			this.game.width,
