@@ -11,7 +11,8 @@ Main.Preload.prototype = {
     this.game.load.image('fence',       'assets/images/fence.png');
     this.game.load.image('background',  'assets/images/background.png');
     this.game.load.image('road',        'assets/images/road.png');
-    this.game.load.image('container01',        'assets/images/container_01.png');
+    this.game.load.image('container01', 'assets/images/container_01.png');
+    this.game.load.image('cardboardbox',   'assets/images/cardboardbox.png');
     this.game.load.image('ground',      'assets/images/ground.png');
     this.game.load.image('menu-start',  'assets/images/menu-start.png');
 
@@ -21,6 +22,7 @@ Main.Preload.prototype = {
 
     //HERO
     this.game.load.spritesheet('hero',  'assets/images/hero.png',14,22, 2);
+    this.game.load.spritesheet('hero_run',  'assets/images/hero_run.png', 14, 22, 9);
   },
   
   create : function() {

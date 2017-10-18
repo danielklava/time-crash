@@ -5,7 +5,7 @@ Main.Stage1.prototype = {
 	create: function() {
 		this.camera.flash("#000000");
 
-		var gravity = 400;
+		var gravity = 350;
 		var stageLength = 288;
 
 		//Enble Arcade Physics
@@ -60,15 +60,15 @@ Main.Stage1.prototype = {
 	createActors : function (){
   		//creating ground sprite
   		this.ground = this.add.tileSprite(0,this.game.height - 10,this.game.world.width, 10, 'ground');
-
+		
 		this.car = this.game.add.sprite(-100, 54,'car-driving');
 		this.car.animations.add('drive');
 		this.car.animations.play('drive', 5, true);
 
-		this.hero = this.game.add.sprite(80, 0, 'hero');
+		this.hero = this.game.add.sprite(80, 0, 'hero_run');
 		this.hero.alpha = 0;
-		this.hero.animations.add('walk',[0], 2, true);
-		this.hero.animations.add('jump',[1], 2, true);
+		this.hero.animations.add('walk', [0, 1,2,3,4,5,6,7,8], 15);
+		//this.hero.animations.add('jump', 2, true);
 		
 		this.carArrives = this.add.tween(this.car).to({ x:10}, 2000, Phaser.Easing.Cubic.InOut, true, 0, 0, false);
 		this.carArrives.onComplete.add(this.showHero, this);
@@ -76,6 +76,7 @@ Main.Stage1.prototype = {
 	},
 	createObjects : function(){
 		this.container01 = this.game.add.sprite(100,44,'container01');
+		this.cardboardbox = this.game.add.sprite(90,56,'cardboardbox');
 	},
 	showHero : function(){
 		this.hero.alpha = 1;
@@ -132,16 +133,19 @@ Main.Stage1.prototype = {
   		this.physics.arcade.enable(this.hero);
 		this.physics.arcade.enable(this.ground);
 		this.physics.arcade.enable(this.container01);
+		this.physics.arcade.enable(this.cardboardbox);
 		
 		this.container01.body.immovable=true;
 		this.container01.body.allowGravity=false;
+		this.cardboardbox.body.immovable=true;
+		this.cardboardbox.body.allowGravity=false;
 
 		this.ground.body.immovable = true;
 	    this.ground.body.allowGravity = false;
 
 		this.hero.body.gravity.y = gravity;
 		this.hero.body.collideWorldBounds = true;
-		this.hero.body.setSize(12,20,3,0);
+		this.hero.body.setSize(8,20,3,0);
 		this.hero.body.maxVelocity.y = 500;
   	},
   	adjustCamera: function(){
@@ -151,11 +155,12 @@ Main.Stage1.prototype = {
 		this.updateBackground();
 		this.physics.arcade.collide(this.hero, this.ground, this.playerHit, null, this);
 		this.physics.arcade.collide(this.hero, this.container01);
+		this.physics.arcade.collide(this.hero, this.cardboardbox);
 		
 		this.hero.body.velocity.x = 0;
 		
 		if (this.hero.body.velocity.y != 0){
-			this.hero.animations.play('jump');
+			//this.hero.animations.play('jump');
 		}else{
 			this.hero.animations.play('walk');
 		}
@@ -177,8 +182,8 @@ Main.Stage1.prototype = {
 		}
 
 		if (this.jumpButton.isDown && this.hero.body.touching.down){
-			this.hero.body.velocity.y = -200;
-			this.hero.animations.play('jump');
+			this.hero.body.velocity.y = -180;
+			//this.hero.animations.play('jump');
 		}
 	},
 	updateBackground : function(){
