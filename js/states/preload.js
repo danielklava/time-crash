@@ -21,15 +21,17 @@ Main.Preload.prototype = {
     this.game.load.spritesheet('car-driving', 'assets/images/car-sheet.png', 70, 18, 2);
 
     //HERO
-    this.game.load.spritesheet('hero',  'assets/images/hero.png',14,22, 2);
-    this.game.load.spritesheet('hero_run',  'assets/images/hero_run.png', 14, 22, 9);
+    this.game.load.atlas('hero',  'assets/images/hero_atlas.png', 'assets/images/hero_atlas.json');
+
+    //BULLET
+    this.game.load.image('bullet',  'assets/images/bullet.png');
   },
   
   create : function() {
     
     this.stage.backgroundColor = "#000";
 
-    this.state.start('GameTitle', true, false);
+    this.state.start('Stage1', true, false);
   },
 
   update : function() {}

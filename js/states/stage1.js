@@ -33,16 +33,9 @@ Main.Stage1.prototype = {
 
 		this.cursors = this.game.input.keyboard.createCursorKeys();
 		this.jumpButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+		this.fireButton = this.game.input.keyboard.addKey(Phaser.KeyCode.CONTROL);
 
 		this.camera.follow(this.hero, Phaser.Camera.FOLLOW_PLATFORMER, 0.1, 0.1);
-	},
-	render : function(){
-		if (this.timer.running) {
-            this.game.debug.text(this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000)), 2, 14, "#ff0");
-        }
-        else {
-            this.game.debug.text("Done!", 2, 14, "#0f0");
-		}
 	},
 	endTimer: function() {
         // Stop the timer when the delayed event triggers
@@ -65,18 +58,38 @@ Main.Stage1.prototype = {
 		this.car.animations.add('drive');
 		this.car.animations.play('drive', 5, true);
 
-		this.hero = this.game.add.sprite(80, 0, 'hero_run');
+		this.hero = this.game.add.sprite(40, 0, 'hero');
+		this.hero.animations.add('idle', Phaser.Animation.generateFrameNames('hero_idle', 0, 4,"",1), 6, true);
+		this.hero.animations.add('run', Phaser.Animation.generateFrameNames('hero_run', 0, 9,"",2), 10, true);
+		this.hero.animations.add('jump', ['hero_jump'], 1, true);
 		this.hero.alpha = 0;
-		this.hero.animations.add('walk', [0, 1,2,3,4,5,6,7,8], 15);
-		//this.hero.animations.add('jump', 2, true);
+		this.hero.anchor.set(0.5);
+		this.hero.animations.play('run');
+
+		this.weapon = this.game.add.weapon(5, 'bullet');
+		this.weapon.bulletSpeed = 100;
+		//this.weapon.fireLimit = 1;
+		this.weapon.fireRate = 500;
+		this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
+		this.weapon.bulletKillDistance = 45;
+		this.weapon.bulletKillType = Phaser.Weapon.KILL_DISTANCE;
+		this.weapon.bulletGravity.y = -350;
 		
-		this.carArrives = this.add.tween(this.car).to({ x:10}, 2000, Phaser.Easing.Cubic.InOut, true, 0, 0, false);
+		this.weapon.trackSprite(this.hero, 5, -2, true);
+		this.weapon.trackRotation = false;
+
+		this.carArrives = this.add.tween(this.car).to({ x:0}, 2000, Phaser.Easing.Cubic.InOut, true, 0, 0, false);
 		this.carArrives.onComplete.add(this.showHero, this);
 		this.carArrives.start();
 	},
 	createObjects : function(){
-		this.container01 = this.game.add.sprite(100,44,'container01');
-		this.cardboardbox = this.game.add.sprite(90,56,'cardboardbox');
+		this.objects = this.add.group();
+		
+		this.container01 = this.add.sprite(110,44,'container01');
+		this.cardboardbox = this.add.sprite(80,56,'cardboardbox');
+		
+		this.objects.add(this.container01);
+		this.objects.add(this.cardboardbox);
 	},
 	showHero : function(){
 		this.hero.alpha = 1;
@@ -135,8 +148,11 @@ Main.Stage1.prototype = {
 		this.physics.arcade.enable(this.container01);
 		this.physics.arcade.enable(this.cardboardbox);
 		
+		this.container01.enableBody = true;
 		this.container01.body.immovable=true;
 		this.container01.body.allowGravity=false;
+
+		this.cardboardbox.enableBody = true;
 		this.cardboardbox.body.immovable=true;
 		this.cardboardbox.body.allowGravity=false;
 
@@ -145,7 +161,6 @@ Main.Stage1.prototype = {
 
 		this.hero.body.gravity.y = gravity;
 		this.hero.body.collideWorldBounds = true;
-		this.hero.body.setSize(8,20,3,0);
 		this.hero.body.maxVelocity.y = 500;
   	},
   	adjustCamera: function(){
@@ -156,41 +171,62 @@ Main.Stage1.prototype = {
 		this.physics.arcade.collide(this.hero, this.ground, this.playerHit, null, this);
 		this.physics.arcade.collide(this.hero, this.container01);
 		this.physics.arcade.collide(this.hero, this.cardboardbox);
+		//this.physics.arcade.overlap(this.weapon.bullets, this.objects, this.bulletHitWall);
 		
 		this.hero.body.velocity.x = 0;
 		
-		if (this.hero.body.velocity.y != 0){
-			//this.hero.animations.play('jump');
-		}else{
-			this.hero.animations.play('walk');
-		}
-
 		if (this.cursors.left.isDown)
 		{
 			this.hero.body.velocity.x = -45;
-			if (this.hero.body.velocity.y == 0){
-				this.hero.animations.play('walk');
+			if (this.hero.scale.x > 0){
+				this.hero.scale.x *=-1;
 			}
+
+			this.weapon.fireAngle = Phaser.ANGLE_LEFT;
 		}
 		else if (this.cursors.right.isDown)
 		{
 			this.hero.body.velocity.x = 45;
-
-			if (this.hero.body.velocity.y == 0){
-				this.hero.animations.play('walk');
+			if (this.hero.scale.x < 0){
+				this.hero.scale.x *=-1;
 			}
+
+			this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
 		}
 
 		if (this.jumpButton.isDown && this.hero.body.touching.down){
-			this.hero.body.velocity.y = -180;
-			//this.hero.animations.play('jump');
+			this.hero.body.velocity.y = -210;
 		}
+
+		if (this.fireButton.isDown){
+			this.weapon.fire();
+		}
+
+
+		if (this.hero.body.velocity.y != 0){
+			this.hero.animations.play('jump');
+		}else{
+			if (this.hero.body.velocity.x == 0){
+				this.hero.animations.play('idle');
+			}
+			else{
+				this.hero.animations.play('run');
+			}
+		}
+	},
+	bulletHitWall : function(bullet, object){
+		bullet.destroy();		
 	},
 	updateBackground : function(){
 		this.background.tilePosition.x -= 0.03;
 		this.clouds.tilePosition.x -=  0.05	;
-	    //this.cityFar.tilePosition.x = - this.hero.x * 0.15;
-	    //this.cityMid.tilePosition.x = -this.hero.x * 0.2;
-	    //this.cityFront.tilePosition.x = - this.hero.x * 0.25;
-	}
+	},
+	render : function(){
+		if (this.timer.running) {
+            this.game.debug.text(this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000)), 2, 14, "#ff0");
+        }
+        else {
+            this.game.debug.text("Done!", 2, 14, "#0f0");
+		}
+	},
 };
