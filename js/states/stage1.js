@@ -6,7 +6,7 @@ Main.Stage1.prototype = {
 		this.camera.flash("#000000");
 
 		var gravity = 350;
-		var stageLength = 288;
+		var stageLength = 700;
 
 		//Enble Arcade Physics
 		this.physics.startSystem(Phaser.Physics.ARCADE);
@@ -81,14 +81,22 @@ Main.Stage1.prototype = {
 		this.carArrives = this.add.tween(this.car).to({ x:0}, 2000, Phaser.Easing.Cubic.InOut, true, 0, 0, false);
 		this.carArrives.onComplete.add(this.showHero, this);
 		this.carArrives.start();
+
+		this.raptor = this.game.add.sprite(170,45,'raptor');
+		this.raptor.scale.x *= -1;
+		this.raptor.animations.add('run', Phaser.Animation.generateFrameNames('raptor_run', 0, 6,"",1), 6, true);
+		this.raptor.animations.play('run');
+		this.raptor.anchor.set(0.5);
 	},
 	createObjects : function(){
 		this.objects = this.add.group();
 		
 		this.container01 = this.add.sprite(110,44,'container01');
+		this.container02 = this.add.sprite(280,44,'container01');
 		this.cardboardbox = this.add.sprite(80,56,'cardboardbox');
 		
 		this.objects.add(this.container01);
+		this.objects.add(this.container02);
 		this.objects.add(this.cardboardbox);
 	},
 	showHero : function(){
@@ -146,11 +154,16 @@ Main.Stage1.prototype = {
   		this.physics.arcade.enable(this.hero);
 		this.physics.arcade.enable(this.ground);
 		this.physics.arcade.enable(this.container01);
+		this.physics.arcade.enable(this.container02);
 		this.physics.arcade.enable(this.cardboardbox);
+		this.physics.arcade.enable(this.raptor);
 		
 		this.container01.enableBody = true;
 		this.container01.body.immovable=true;
 		this.container01.body.allowGravity=false;
+		this.container02.enableBody = true;
+		this.container02.body.immovable=true;
+		this.container02.body.allowGravity=false;
 
 		this.cardboardbox.enableBody = true;
 		this.cardboardbox.body.immovable=true;
@@ -162,6 +175,11 @@ Main.Stage1.prototype = {
 		this.hero.body.gravity.y = gravity;
 		this.hero.body.collideWorldBounds = true;
 		this.hero.body.maxVelocity.y = 500;
+
+		this.raptor.body.allowGravity=true;
+		this.raptor.enableBody = true;
+		this.raptor.body.collideWorldBounds = true;
+
   	},
   	adjustCamera: function(){
   		this.game.camera.follow(this.hero);
@@ -171,7 +189,10 @@ Main.Stage1.prototype = {
 		this.physics.arcade.collide(this.hero, this.ground, this.playerHit, null, this);
 		this.physics.arcade.collide(this.hero, this.container01);
 		this.physics.arcade.collide(this.hero, this.cardboardbox);
-		//this.physics.arcade.overlap(this.weapon.bullets, this.objects, this.bulletHitWall);
+		this.physics.arcade.overlap(this.weapon.bullets, this.raptor, this.bulletHitEnemy);
+		this.physics.arcade.collide(this.objects, this.raptor, this.enemyHitWall);
+		this.physics.arcade.collide(this.raptor, this.ground);
+		this.physics.arcade.collide(this.raptor, this.objects);
 		
 		this.hero.body.velocity.x = 0;
 		
@@ -213,9 +234,26 @@ Main.Stage1.prototype = {
 				this.hero.animations.play('run');
 			}
 		}
+
+		this.updateEnemies();
 	},
-	bulletHitWall : function(bullet, object){
-		bullet.destroy();		
+	updateEnemies : function(){
+		if (this.raptor.body != null)
+			if (Math.random() > 0.5){
+				if (this.raptor.scale.x > 0){
+					this.raptor.body.velocity.x = 30;
+				}
+				else {
+					this.raptor.body.velocity.x = -30;
+				}
+			}
+	},
+	enemyHitWall : function (enemy, object){
+		enemy.scale.x *= -1;
+	},
+	bulletHitEnemy : function(bullet, object){
+		bullet.destroy();	
+		object.destroy();	
 	},
 	updateBackground : function(){
 		this.background.tilePosition.x -= 0.03;

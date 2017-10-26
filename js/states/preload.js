@@ -25,6 +25,9 @@ Main.Preload.prototype = {
 
     //BULLET
     this.game.load.image('bullet',  'assets/images/bullet.png');
+
+    //ENEMIES
+    this.game.load.atlas('raptor',  'assets/images/raptor_atlas.png', 'assets/images/raptor_atlas.json');
   },
   
   create : function() {
