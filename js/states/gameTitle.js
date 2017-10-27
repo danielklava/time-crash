@@ -29,6 +29,8 @@ Main.GameTitle.prototype = {
 		this.car.animations.play('drive', 5, true);
 		
 		this.add.tween(this.car).to({ x:7, y: 55}, 2000, Phaser.Easing.Cubic.InOut, true, 1, 1000, true);
+
+		this.gameTitle = this.game.add.sprite(30, 0,'gameTitle');		
 	},
   	createBackground: function(){
   		this.game.stage.backgroundColor = "#000";
@@ -72,6 +74,11 @@ Main.GameTitle.prototype = {
 		);	
   	},
 	startCallback : function (){
+		this.hideTitle = this.add.tween(this.gameTitle).to({alpha: 0}, 2000, Phaser.Easing.Linear.None, false, 0, 0, false);
+		this.hideTitle.onComplete.add(this.introMoveCar, this);
+		this.hideTitle.start();
+	},
+	introMoveCar : function(){
 		this.carLeaves = this.add.tween(this.car).to({ x:200}, 2000, Phaser.Easing.Cubic.InOut, false, 0, 0, false);
 		this.carLeaves.onComplete.add(this.fadeOut, this);		
 		this.carLeaves.start();

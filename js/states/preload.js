@@ -4,6 +4,8 @@ Main.Preload = function (){};
 
 Main.Preload.prototype = {
   preload : function() {
+    this.game.load.image('gameTitle',    'assets/images/gametitle.png');
+
     this.game.load.image('city-far',    'assets/images/city-far.png');
     this.game.load.image('city-front',  'assets/images/city-front.png');
     this.game.load.image('city-mid',    'assets/images/city-mid.png');
@@ -34,7 +36,7 @@ Main.Preload.prototype = {
     
     this.stage.backgroundColor = "#000";
 
-    this.state.start('Stage1', true, false);
+    this.state.start('GameTitle', true, false);
   },
 
   update : function() {}

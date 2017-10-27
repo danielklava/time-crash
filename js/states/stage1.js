@@ -175,6 +175,7 @@ Main.Stage1.prototype = {
 		this.hero.body.gravity.y = gravity;
 		this.hero.body.collideWorldBounds = true;
 		this.hero.body.maxVelocity.y = 500;
+		this.hero.body.setSize(12,21);
 
 		this.raptor.body.allowGravity=true;
 		this.raptor.enableBody = true;
@@ -189,6 +190,7 @@ Main.Stage1.prototype = {
 		this.physics.arcade.collide(this.hero, this.ground, this.playerHit, null, this);
 		this.physics.arcade.collide(this.hero, this.container01);
 		this.physics.arcade.collide(this.hero, this.cardboardbox);
+		this.physics.arcade.collide(this.hero, this.raptor, this.restartStage, null, this);
 		this.physics.arcade.overlap(this.weapon.bullets, this.raptor, this.bulletHitEnemy);
 		this.physics.arcade.collide(this.objects, this.raptor, this.enemyHitWall);
 		this.physics.arcade.collide(this.raptor, this.ground);
@@ -237,6 +239,9 @@ Main.Stage1.prototype = {
 
 		this.updateEnemies();
 	},
+	restartStage : function(){
+		this.game.state.restart();
+	},
 	updateEnemies : function(){
 		if (this.raptor.body != null)
 			if (Math.random() > 0.5){
@@ -264,7 +269,8 @@ Main.Stage1.prototype = {
             this.game.debug.text(this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000)), 2, 14, "#ff0");
         }
         else {
-            this.game.debug.text("Done!", 2, 14, "#0f0");
+			this.game.debug.text("Failed!", 2, 14, "#0f0");
+			this.restartStage();
 		}
 	},
 };
