@@ -1,6 +1,8 @@
 body{
 	background-color: #777;
 	margin: 0 auto;
+	font-family: 'Press Start 2P', cursive;
+	font-size: 8px;
 }
 #gameArea{
 	/*width: 50%;
