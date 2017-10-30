@@ -10,6 +10,9 @@ Main.GameTitle.prototype = {
 
 		this.spacebarButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 		this.enterButton = this.game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+
+		this.themeMusic = this.game.add.audio('theme');
+		this.themeMusic.play();
 	},
 	update: function() {
 		this.updateBackground();

@@ -36,6 +36,10 @@ Main.Stage1.prototype = {
 		this.fireButton = this.game.input.keyboard.addKey(Phaser.KeyCode.CONTROL);
 
 		this.camera.follow(this.hero, Phaser.Camera.FOLLOW_PLATFORMER, 0.1, 0.1);
+
+		this.jumpSound = this.game.add.audio('jump');
+		this.themeMusic = this.game.add.audio('theme');
+		this.themeMusic.play();
 	},
 	endTimer: function() {
         // Stop the timer when the delayed event triggers
@@ -58,7 +62,7 @@ Main.Stage1.prototype = {
 		this.car.animations.add('drive');
 		this.car.animations.play('drive', 5, true);
 
-		this.hero = this.game.add.sprite(40, 0, 'hero');
+		this.hero = this.game.add.sprite(40, 61, 'hero');
 		this.hero.animations.add('idle', Phaser.Animation.generateFrameNames('hero_idle', 0, 4,"",1), 6, true);
 		this.hero.animations.add('run', Phaser.Animation.generateFrameNames('hero_run', 0, 9,"",2), 10, true);
 		this.hero.animations.add('jump', ['hero_jump'], 1, true);
@@ -189,6 +193,7 @@ Main.Stage1.prototype = {
 		this.updateBackground();
 		this.physics.arcade.collide(this.hero, this.ground, this.playerHit, null, this);
 		this.physics.arcade.collide(this.hero, this.container01);
+		this.physics.arcade.collide(this.hero, this.container02);
 		this.physics.arcade.collide(this.hero, this.cardboardbox);
 		this.physics.arcade.collide(this.hero, this.raptor, this.restartStage, null, this);
 		this.physics.arcade.overlap(this.weapon.bullets, this.raptor, this.bulletHitEnemy);
@@ -219,6 +224,7 @@ Main.Stage1.prototype = {
 
 		if (this.jumpButton.isDown && this.hero.body.touching.down){
 			this.hero.body.velocity.y = -210;
+			this.jumpSound.play();
 		}
 
 		if (this.fireButton.isDown){

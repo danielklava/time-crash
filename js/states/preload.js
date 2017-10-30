@@ -30,13 +30,17 @@ Main.Preload.prototype = {
 
     //ENEMIES
     this.game.load.atlas('raptor',  'assets/images/raptor_atlas.png', 'assets/images/raptor_atlas.json');
+
+    //AUDIO
+    this.game.load.audio('theme', ['assets/audio/theme.wav'], true);
+    this.game.load.audio('jump', ['assets/audio/jump.wav'], false);
   },
   
   create : function() {
     
     this.stage.backgroundColor = "#000";
 
-    this.state.start('GameTitle', true, false);
+    this.state.start('Stage1', true, false);
   },
 
   update : function() {}
