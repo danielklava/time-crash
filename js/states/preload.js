@@ -18,6 +18,11 @@ Main.Preload.prototype = {
     this.game.load.image('ground',      'assets/images/ground.png');
     this.game.load.image('menu-start',  'assets/images/menu-start.png');
 
+    this.game.load.image('bg-lab',  'assets/images/bg_lab.png');
+    this.game.load.image('lab-walls',  'assets/images/lab_walls.png');
+    this.game.load.image('lab-computer',  'assets/images/lab_computer.png');
+    this.game.load.image('lab-energy',  'assets/images/lab_energy.png');
+
     //CAR
     this.game.load.image('car-idle',    'assets/images/car-idle.png');
     this.game.load.spritesheet('car-driving', 'assets/images/car-sheet.png', 70, 18, 2);
@@ -34,13 +39,14 @@ Main.Preload.prototype = {
     //AUDIO
     this.game.load.audio('theme', ['assets/audio/theme.wav'], true);
     this.game.load.audio('jump', ['assets/audio/jump.wav'], false);
+    this.game.load.audio('raptorSound', ['assets/audio/raptor.wav'], false);
   },
   
   create : function() {
     
     this.stage.backgroundColor = "#000";
 
-    this.state.start('Stage1', true, false);
+    this.state.start('GameTitle', true, false);
   },
 
   update : function() {}

@@ -6,7 +6,7 @@ Main.Stage1.prototype = {
 		this.camera.flash("#000000");
 
 		var gravity = 350;
-		var stageLength = 700;
+		var stageLength = 144 * 4;
 
 		//Enble Arcade Physics
 		this.physics.startSystem(Phaser.Physics.ARCADE);
@@ -28,17 +28,19 @@ Main.Stage1.prototype = {
 		this.game.stage.smoothed=false;
 
 		this.timer = Main.game.time.create();
-		this.timerEvent = this.timer.add(Phaser.Timer.MINUTE * 1, this.endTimer, this);
+		this.timerEvent = this.timer.add(Phaser.Timer.MINUTE * 0.5, this.endTimer, this);
 		this.timer.start();
 
 		this.cursors = this.game.input.keyboard.createCursorKeys();
 		this.jumpButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 		this.fireButton = this.game.input.keyboard.addKey(Phaser.KeyCode.CONTROL);
+		this.actionButton = this.game.input.keyboard.addKey(Phaser.KeyCode.SHIFT);
 
 		this.camera.follow(this.hero, Phaser.Camera.FOLLOW_PLATFORMER, 0.1, 0.1);
 
 		this.jumpSound = this.game.add.audio('jump');
-		this.themeMusic = this.game.add.audio('theme');
+		this.raptorSound = this.game.add.audio('raptorSound');
+		this.themeMusic = this.game.add.audio('theme', 1, true);
 		this.themeMusic.play();
 	},
 	endTimer: function() {
@@ -91,6 +93,10 @@ Main.Stage1.prototype = {
 		this.raptor.animations.add('run', Phaser.Animation.generateFrameNames('raptor_run', 0, 6,"",1), 6, true);
 		this.raptor.animations.play('run');
 		this.raptor.anchor.set(0.5);
+
+		this.raptor2 = this.game.add.sprite(290,30,'raptor');
+		this.raptor2.scale.x *= -1;
+		this.raptor2.anchor.set(0.5);
 	},
 	createObjects : function(){
 		this.objects = this.add.group();
@@ -145,6 +151,13 @@ Main.Stage1.prototype = {
 			'road'
 		);    
 
+		//LAB BG
+		this.bgLab = this.game.add.sprite(144*3, 0, 'bg-lab');     
+		this.labWalls = this.game.add.sprite(144*3, 0, 'lab-walls');          
+		this.labComputer = this.game.add.sprite(505, 50, 'lab-computer');     
+		this.labEnergy = this.game.add.sprite(144*3, 0, 'lab-energy');     
+		
+		this.add.tween(this.labEnergy).to({y: -5}, 1000, Phaser.Easing.Cubic.InOut, true, 1, 1000, true);		
   	},
   	orderStageElements: function() {
 	    this.game.world.bringToTop(this.background);
@@ -157,10 +170,16 @@ Main.Stage1.prototype = {
   	addPhisicsToElements: function(gravity){
   		this.physics.arcade.enable(this.hero);
 		this.physics.arcade.enable(this.ground);
+		this.physics.arcade.enable(this.labComputer);
 		this.physics.arcade.enable(this.container01);
 		this.physics.arcade.enable(this.container02);
 		this.physics.arcade.enable(this.cardboardbox);
 		this.physics.arcade.enable(this.raptor);
+		this.physics.arcade.enable(this.raptor2);
+
+		this.labComputer.enableBody = true;
+		this.labComputer.body.immovable=true;
+		this.labComputer.body.allowGravity=false
 		
 		this.container01.enableBody = true;
 		this.container01.body.immovable=true;
@@ -185,21 +204,40 @@ Main.Stage1.prototype = {
 		this.raptor.enableBody = true;
 		this.raptor.body.collideWorldBounds = true;
 
+		this.raptor2.body.allowGravity=true;
+		this.raptor2.enableBody = true;
+		this.raptor2.body.collideWorldBounds = true;
+
   	},
   	adjustCamera: function(){
   		this.game.camera.follow(this.hero);
-  	},
+	},
+	interactComputer : function(){
+		console.log("Interact");
+		if (this.actionButton.isDown){
+			this.status = "WIN";
+			this.camera.fade("#000000",1500);
+			this.camera.onFadeComplete.add(function(){			
+				this.state.start('GameTitle', true, false);
+			}, this);
+		}
+	},
 	update: function() {
 		this.updateBackground();
 		this.physics.arcade.collide(this.hero, this.ground, this.playerHit, null, this);
+		this.physics.arcade.overlap(this.hero, this.labComputer, this.interactComputer, null, this);
 		this.physics.arcade.collide(this.hero, this.container01);
 		this.physics.arcade.collide(this.hero, this.container02);
 		this.physics.arcade.collide(this.hero, this.cardboardbox);
 		this.physics.arcade.collide(this.hero, this.raptor, this.restartStage, null, this);
+		this.physics.arcade.collide(this.hero, this.raptor2, this.restartStage, null, this);
 		this.physics.arcade.overlap(this.weapon.bullets, this.raptor, this.bulletHitEnemy);
+		this.physics.arcade.overlap(this.weapon.bullets, this.raptor2, this.bulletHitEnemy);
 		this.physics.arcade.collide(this.objects, this.raptor, this.enemyHitWall);
 		this.physics.arcade.collide(this.raptor, this.ground);
+		this.physics.arcade.collide(this.raptor2, this.ground);
 		this.physics.arcade.collide(this.raptor, this.objects);
+		this.physics.arcade.collide(this.raptor2, this.objects);
 		
 		this.hero.body.velocity.x = 0;
 		
@@ -262,7 +300,7 @@ Main.Stage1.prototype = {
 	enemyHitWall : function (enemy, object){
 		enemy.scale.x *= -1;
 	},
-	bulletHitEnemy : function(bullet, object){
+	bulletHitEnemy : function(bullet, object){	
 		bullet.destroy();	
 		object.destroy();	
 	},
@@ -271,12 +309,17 @@ Main.Stage1.prototype = {
 		this.clouds.tilePosition.x -=  0.05	;
 	},
 	render : function(){
-		if (this.timer.running) {
-            this.game.debug.text(this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000)), 2, 14, "#ff0");
-        }
-        else {
-			this.game.debug.text("Failed!", 2, 14, "#0f0");
-			this.restartStage();
+		if (this.status == "WIN"){
+			this.game.debug.text("You won!", 2, 14, "green");
+		}
+		else{
+			if (this.timer.running) {
+				this.game.debug.text(this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000)), 2, 14, "#ff0");
+			}
+			else {
+				this.game.debug.text("Failed!", 2, 14, "#0f0");
+				this.restartStage();
+			}
 		}
 	},
 };
