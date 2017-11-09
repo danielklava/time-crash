@@ -1,8 +1,8 @@
 var Main = Main || {};
 
 Main.game = new Phaser.Game({
-  width: 144,
-  height: 81,
+  width: 144,//192,
+  height: 81,// 108,
   renderer: Phaser.CANVAS,
   parent: 'gameArea',
   antialias: false

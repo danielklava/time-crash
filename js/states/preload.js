@@ -22,6 +22,7 @@ Main.Preload.prototype = {
     this.game.load.image('lab-walls',  'assets/images/lab_walls.png');
     this.game.load.image('lab-computer',  'assets/images/lab_computer.png');
     this.game.load.image('lab-energy',  'assets/images/lab_energy.png');
+    this.game.load.image('dialog',  'assets/images/dialog_box.png');
 
     //CAR
     this.game.load.image('car-idle',    'assets/images/car-idle.png');
@@ -29,6 +30,9 @@ Main.Preload.prototype = {
 
     //HERO
     this.game.load.atlas('hero',  'assets/images/hero_atlas.png', 'assets/images/hero_atlas.json');
+
+    //NPCS
+    this.game.load.image('selene_portrait',  'assets/images/selene_portrait.png');
 
     //BULLET
     this.game.load.image('bullet',  'assets/images/bullet.png');
@@ -38,15 +42,19 @@ Main.Preload.prototype = {
 
     //AUDIO
     this.game.load.audio('theme', ['assets/audio/theme.wav'], true);
+    this.game.load.audio('shoot', ['assets/audio/laser.ogg'], true);
     this.game.load.audio('jump', ['assets/audio/jump.wav'], false);
     this.game.load.audio('raptorSound', ['assets/audio/raptor.wav'], false);
+    
+    //FONT
+    this.game.load.bitmapFont('3By5Font','assets/fonts/3 by 5 Font.png', 'assets/fonts/3 by 5 Font.fnt');
   },
   
   create : function() {
     
-    this.stage.backgroundColor = "#000";
+    this.stage.backgroundColor = "#FFF";
 
-    this.state.start('GameTitle', true, false);
+    this.state.start('Stage1', true, false);
   },
 
   update : function() {}

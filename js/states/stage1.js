@@ -4,6 +4,7 @@ Main.Stage1 = function(){};
 Main.Stage1.prototype = {
 	create: function() {
 		this.camera.flash("#000000");
+		this.inputEnabled = false;
 
 		var gravity = 350;
 		var stageLength = 144 * 4;
@@ -30,6 +31,10 @@ Main.Stage1.prototype = {
 		this.timer = Main.game.time.create();
 		this.timerEvent = this.timer.add(Phaser.Timer.MINUTE * 0.5, this.endTimer, this);
 		this.timer.start();
+		this.timerText = this.game.add.bitmapText(100, 65, "3By5Font", "", 16);
+
+		this.timerText.fixedToCamera = true;
+		this.timerText.cameraOffset.setTo(100,65);
 
 		this.cursors = this.game.input.keyboard.createCursorKeys();
 		this.jumpButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -39,9 +44,39 @@ Main.Stage1.prototype = {
 		this.camera.follow(this.hero, Phaser.Camera.FOLLOW_PLATFORMER, 0.1, 0.1);
 
 		this.jumpSound = this.game.add.audio('jump');
+		this.shootSound = this.game.add.audio('shoot');
 		this.raptorSound = this.game.add.audio('raptorSound');
 		this.themeMusic = this.game.add.audio('theme', 1, true);
 		this.themeMusic.play();
+
+	},
+	addDialogText: function(speaker, sentence){
+		this.inputEnabled = false;
+		
+		this.dialog = this.game.add.sprite(1, 1, 'dialog');
+		this.portrait = this.game.add.sprite(3,3,"selene_portrait");
+
+		this.speaker = this.game.add.bitmapText(25, 5, "3By5Font", speaker + ":", 8);
+		this.buffer = this.game.add.bitmapText(25, 15, "3By5Font", "", 8);
+		
+		var i =-1;
+		this.game.time.events.loop(Phaser.Timer.SECOND*0.10, function() {
+			if (i == sentence.length - 1){
+				this.game.time.events.add(Phaser.Timer.SECOND * 2, function(){
+					this.dialog.destroy();
+					this.portrait.destroy();
+					this.speaker.destroy();
+					this.buffer.destroy();
+					this.game.time.events.stop();
+					this.inputEnabled = true;
+				}, this);
+			}
+			else{
+				i++;
+				this.buffer.text = this.buffer.text + sentence[i];
+			}
+		}, this);
+
 	},
 	endTimer: function() {
         // Stop the timer when the delayed event triggers
@@ -50,7 +85,7 @@ Main.Stage1.prototype = {
     formatTime: function(s) {
         // Convert seconds (s) to a nicely formatted and padded time string
         var minutes = "0" + Math.floor(s / 60);
-        var seconds = "0" + (s - minutes * 60);
+		var seconds = "0" + (s - minutes * 60);
         return minutes.substr(-2) + ":" + seconds.substr(-2);   
     },
 	adjustStageWorld: function(stageLength){
@@ -58,16 +93,16 @@ Main.Stage1.prototype = {
 	},
 	createActors : function (){
   		//creating ground sprite
-  		this.ground = this.add.tileSprite(0,this.game.height - 10,this.game.world.width, 10, 'ground');
+  		this.ground = this.add.tileSprite(0,this.game.height - 10  ,this.game.world.width, 10, 'ground');
 		
-		this.car = this.game.add.sprite(-100, 54,'car-driving');
+		this.car = this.game.add.sprite(-100, 53,'car-driving');
 		this.car.animations.add('drive');
 		this.car.animations.play('drive', 5, true);
 
-		this.hero = this.game.add.sprite(40, 61, 'hero');
-		this.hero.animations.add('idle', Phaser.Animation.generateFrameNames('hero_idle', 0, 4,"",1), 6, true);
-		this.hero.animations.add('run', Phaser.Animation.generateFrameNames('hero_run', 0, 9,"",2), 10, true);
-		this.hero.animations.add('jump', ['hero_jump'], 1, true);
+		this.hero = this.game.add.sprite(40, 61 , 'hero');
+		this.hero.animations.add('idle', Phaser.Animation.generateFrameNames('hero_idle', 0, 1,"",1), 3, true);
+		this.hero.animations.add('run', Phaser.Animation.generateFrameNames('hero_run', 1, 10,"",1), 12, true);
+		//this.hero.animations.add('jump', 'hero_idle1', 1, true);
 		this.hero.alpha = 0;
 		this.hero.anchor.set(0.5);
 		this.hero.animations.play('run');
@@ -88,22 +123,27 @@ Main.Stage1.prototype = {
 		this.carArrives.onComplete.add(this.showHero, this);
 		this.carArrives.start();
 
-		this.raptor = this.game.add.sprite(170,45,'raptor');
+		this.raptor = this.game.add.sprite(190,45 ,'raptor');
 		this.raptor.scale.x *= -1;
 		this.raptor.animations.add('run', Phaser.Animation.generateFrameNames('raptor_run', 0, 6,"",1), 6, true);
 		this.raptor.animations.play('run');
 		this.raptor.anchor.set(0.5);
+		this.raptor.deathSound = this.raptorSound;
 
-		this.raptor2 = this.game.add.sprite(290,30,'raptor');
+		this.raptor2 = this.game.add.sprite(290,30 ,'raptor');
 		this.raptor2.scale.x *= -1;
 		this.raptor2.anchor.set(0.5);
 	},
 	createObjects : function(){
 		this.objects = this.add.group();
 		
-		this.container01 = this.add.sprite(110,44,'container01');
-		this.container02 = this.add.sprite(280,44,'container01');
-		this.cardboardbox = this.add.sprite(80,56,'cardboardbox');
+		this.container01 = this.add.sprite(110,Utils.getObjectPositionAboveGround('container01'),'container01');
+		this.container02 = this.add.sprite(280,Utils.getObjectPositionAboveGround('container01'),'container01');
+		this.cardboardbox = this.add.sprite(
+			80,
+			Utils.getObjectPositionAboveGround('cardboardbox'),
+			'cardboardbox'
+		);
 		
 		this.objects.add(this.container01);
 		this.objects.add(this.container02);
@@ -111,41 +151,42 @@ Main.Stage1.prototype = {
 	},
 	showHero : function(){
 		this.hero.alpha = 1;
+		this.addDialogText("Selene", "You must stop Dr. Stein!");
 	},
   	createBackground: function(stageLength){
-  		this.game.stage.backgroundColor = "#000";
+  		this.game.stage.backgroundColor = "#FFF";
 	
 		this.background = this.game.add.tileSprite(0,
-			(this.game.height - this.game.cache.getImage('background').height)/2,this.game.world.width,
+			(this.game.height - this.game.cache.getImage('background').height) ,this.game.world.width,
 			this.game.cache.getImage('background').height,'background'
 		);    
 		this.clouds = this.game.add.tileSprite(0,
-			(this.game.height - this.game.cache.getImage('clouds').height)/2,
+			(this.game.height - this.game.cache.getImage('clouds').height)  ,
 			this.game.world.width,
 			this.game.cache.getImage('clouds').height,
 			'clouds'
 		);         
 		this.cityFar = this.game.add.tileSprite(0,
-			(this.game.height - this.game.cache.getImage('city-far').height)/2,
+			(this.game.height - this.game.cache.getImage('city-far').height)  ,
 			this.game.world.width,
 			this.game.cache.getImage('city-far').height,
 			'city-far'
 		);   
 		this.cityMid = this.game.add.tileSprite(0,
-			(this.game.height - this.game.cache.getImage('city-mid').height)/2,
+			(this.game.height - this.game.cache.getImage('city-mid').height) ,
 			this.game.world.width,
 			this.game.cache.getImage('city-mid').height,
 			'city-mid'
 		);     
 		this.cityFront = this.game.add.tileSprite(0,
-			(this.game.height - this.game.cache.getImage('city-front').height)/2,
+			(this.game.height - this.game.cache.getImage('city-front').height) ,
 			this.game.world.width,
 			this.game.cache.getImage('city-front').height,
 			'city-front'
 		);
-		this.fence = this.game.add.tileSprite(0, 37, this.game.world.width, this.game.cache.getImage('fence').height, 'fence');     
+		this.fence = this.game.add.tileSprite(0, 37 , this.game.world.width, this.game.cache.getImage('fence').height, 'fence');     
 		this.road = this.game.add.tileSprite(0,
-			(this.game.height - this.game.cache.getImage('road').height)/2,
+			(this.game.height - this.game.cache.getImage('road').height) ,
 			this.game.world.width,
 			this.game.cache.getImage('road').height,
 			'road'
@@ -210,7 +251,7 @@ Main.Stage1.prototype = {
 
   	},
   	adjustCamera: function(){
-  		this.game.camera.follow(this.hero);
+		this.game.camera.follow(this.hero);  
 	},
 	interactComputer : function(){
 		console.log("Interact");
@@ -231,8 +272,8 @@ Main.Stage1.prototype = {
 		this.physics.arcade.collide(this.hero, this.cardboardbox);
 		this.physics.arcade.collide(this.hero, this.raptor, this.restartStage, null, this);
 		this.physics.arcade.collide(this.hero, this.raptor2, this.restartStage, null, this);
-		this.physics.arcade.overlap(this.weapon.bullets, this.raptor, this.bulletHitEnemy);
-		this.physics.arcade.overlap(this.weapon.bullets, this.raptor2, this.bulletHitEnemy);
+		this.physics.arcade.overlap(this.weapon.bullets, this.raptor, this.bulletHitEnemy, null, this);
+		this.physics.arcade.overlap(this.weapon.bullets, this.raptor2, this.bulletHitEnemy, null, this);
 		this.physics.arcade.collide(this.objects, this.raptor, this.enemyHitWall);
 		this.physics.arcade.collide(this.raptor, this.ground);
 		this.physics.arcade.collide(this.raptor2, this.ground);
@@ -241,34 +282,36 @@ Main.Stage1.prototype = {
 		
 		this.hero.body.velocity.x = 0;
 		
-		if (this.cursors.left.isDown)
-		{
-			this.hero.body.velocity.x = -45;
-			if (this.hero.scale.x > 0){
-				this.hero.scale.x *=-1;
+		if (this.inputEnabled){
+			if (this.cursors.left.isDown)
+			{
+				this.hero.body.velocity.x = -45;
+				if (this.hero.scale.x > 0){
+					this.hero.scale.x *=-1;
+				}
+
+				this.weapon.fireAngle = Phaser.ANGLE_LEFT;
+			}
+			else if (this.cursors.right.isDown)
+			{
+				this.hero.body.velocity.x = 45;
+				if (this.hero.scale.x < 0){
+					this.hero.scale.x *=-1;
+				}
+
+				this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
 			}
 
-			this.weapon.fireAngle = Phaser.ANGLE_LEFT;
-		}
-		else if (this.cursors.right.isDown)
-		{
-			this.hero.body.velocity.x = 45;
-			if (this.hero.scale.x < 0){
-				this.hero.scale.x *=-1;
+			if (this.jumpButton.isDown && this.hero.body.touching.down){
+				this.hero.body.velocity.y = -210;
+				this.jumpSound.play();
 			}
 
-			this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
+			if (this.fireButton.isDown){
+				this.weapon.fire();
+				this.shootSound.play();
+			}
 		}
-
-		if (this.jumpButton.isDown && this.hero.body.touching.down){
-			this.hero.body.velocity.y = -210;
-			this.jumpSound.play();
-		}
-
-		if (this.fireButton.isDown){
-			this.weapon.fire();
-		}
-
 
 		if (this.hero.body.velocity.y != 0){
 			this.hero.animations.play('jump');
@@ -298,11 +341,16 @@ Main.Stage1.prototype = {
 			}
 	},
 	enemyHitWall : function (enemy, object){
-		enemy.scale.x *= -1;
+		if (enemy.body.touching.left || enemy.body.touching.right){	
+			enemy.scale.x *= -1;
+		}
 	},
 	bulletHitEnemy : function(bullet, object){	
 		bullet.destroy();	
+
 		object.destroy();	
+
+		this.raptorSound.play();
 	},
 	updateBackground : function(){
 		this.background.tilePosition.x -= 0.03;
@@ -310,16 +358,31 @@ Main.Stage1.prototype = {
 	},
 	render : function(){
 		if (this.status == "WIN"){
-			this.game.debug.text("You won!", 2, 14, "green");
+			//this.game.debug.text("You won!", 2, 70, "green");
+			this.timerText.text = "You won!";
 		}
 		else{
 			if (this.timer.running) {
-				this.game.debug.text(this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000)), 2, 14, "#ff0");
+				var runningTime = this.formatTime(Math.round((this.timerEvent.delay - this.timer.ms) / 1000));
+				//this.game.debug.text(runningTime, 2, 70, "#ff0");
+				this.timerText.text = runningTime;
 			}
 			else {
-				this.game.debug.text("Failed!", 2, 14, "#0f0");
+				//this.game.debug.text("Failed!", 2, 70, "#0f0");
+				this.timerText.text = "Failed";
 				this.restartStage();
 			}
 		}
+
+		//this.game.debug.body(this.hero);
 	},
 };
+
+Utils = {
+	getGroundPositionY : function(){
+		return Main.game.height - Main.game.cache.getImage('ground').height;
+	},
+	getObjectPositionAboveGround : function(spriteName){
+		return Utils.getGroundPositionY() - Main.game.cache.getImage(spriteName).height;
+	}
+}
