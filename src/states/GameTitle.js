@@ -1,8 +1,6 @@
-//title screen
-Main.GameTitle = function(){};
- 
-Main.GameTitle.prototype = {
-	create: function() {
+
+class GameTitle extends Phaser.State{
+	create() {
 
 		this.createBackground();
 		this.createActors();
@@ -13,29 +11,30 @@ Main.GameTitle.prototype = {
 
 		this.themeMusic = this.game.add.audio('theme');
 		this.themeMusic.play();
-	},
-	update: function() {
+	}
+
+	update() {
 		this.updateBackground();
 
 		if (this.spacebarButton.isDown || this.enterButton.isDown){
 			this.startCallback();
 		}
-	},
-	addMenuOptions : function() {
+	}
+	addMenuOptions () {
 		this.menuStart = this.game.add.button(this.game.world.right - 40, this.game.world.bottom-10, 'menu-start', this.startCallback, this, 2, 1, 0);
 		this.menuStart.inputEnabled = true;
 		this.menuStart.events.onInputDown.add(this.startCallback, this);
-	},
-	createActors : function (){
-		this.car = this.game.add.sprite(00, 54,'car-driving');
+	}
+	createActors  (){
+		this.car = this.game.add.sprite(-100, 54,'car-driving');
 		this.car.animations.add('drive');
 		this.car.animations.play('drive', 5, true);
 		
 		this.add.tween(this.car).to({ x:7, y: 55}, 2000, Phaser.Easing.Cubic.InOut, true, 1, 1000, true);
 
 		this.gameTitle = this.game.add.sprite(30, 0,'gameTitle');		
-	},
-  	createBackground: function(){
+	}
+  	createBackground(){
   		this.game.stage.backgroundColor = "#000";
 
 		this.background = this.game.add.tileSprite(0,
@@ -75,26 +74,26 @@ Main.GameTitle.prototype = {
 			this.game.cache.getImage('road').height,
 			'road'
 		);	
-  	},
-	startCallback : function (){
+  	}
+	startCallback  (){
 		this.hideTitle = this.add.tween(this.gameTitle).to({alpha: 0}, 2000, Phaser.Easing.Linear.None, false, 0, 0, false);
 		this.hideTitle.onComplete.add(this.introMoveCar, this);
 		this.hideTitle.start();
-	},
-	introMoveCar : function(){
+	}
+	introMoveCar (){
 		this.carLeaves = this.add.tween(this.car).to({ x:200}, 2000, Phaser.Easing.Cubic.InOut, false, 0, 0, false);
 		this.carLeaves.onComplete.add(this.fadeOut, this);		
 		this.carLeaves.start();
-	},
-	fadeOut : function(){
+	}
+	fadeOut (){
 		this.car.visible=false;
 		this.camera.fade("#000000",500);
 		this.camera.onFadeComplete.add(this.beginGame, this);
-	},
-	beginGame : function (){
+	}
+	beginGame  (){
 		this.state.start('Stage1');
-	},
-	updateBackground : function(){
+	}
+	updateBackground (){
 		this.background.tilePosition.x -=0.02
 		this.clouds.tilePosition.x -= 0.01	;
 		this.cityFar.tilePosition.x -= 0.15;
@@ -103,4 +102,6 @@ Main.GameTitle.prototype = {
 		this.fence.tilePosition.x -=1;
 		this.road.tilePosition.x -=1;
 	}
-};
+}
+
+export default GameTitle;

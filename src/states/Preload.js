@@ -1,9 +1,6 @@
-var Main = Main || {};
 
-Main.Preload = function (){};
-
-Main.Preload.prototype = {
-  preload : function() {
+class Preload extends Phaser.State {
+  preload() {
     this.game.load.image('gameTitle',    'assets/images/gametitle.png');
 
     this.game.load.image('city-far',    'assets/images/city-far.png');
@@ -48,18 +45,14 @@ Main.Preload.prototype = {
     
     //FONT
     this.game.load.bitmapFont('font','assets/fonts/font.png', 'assets/fonts/font.fnt');
+  }
 
-    //LEVELS
-    this.game.load.tilemap('tilemap_1', 'assets/levels/1_city.json', null, Phaser.Tilemap.TILED_JSON);
-    this.game.load.image('tiles_1', 'assets/images/tileset_stage1.png');
-  },
-  
-  create : function() {
+  create() {
     
     this.stage.backgroundColor = "#FFF";
 
     this.state.start('Stage1', true, false);
-  },
-
-  update : function() {}
+  }
 }
+
+export default Preload;
