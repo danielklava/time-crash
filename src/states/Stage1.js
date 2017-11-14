@@ -1,4 +1,8 @@
+import Player from '../objects/Player';
+import Obstacle from '../objects/Obstacle';
+
 class Stage1 extends Phaser.State {
+
 	create() {
 		this.camera.flash("#000000");
 		this.inputEnabled = false;
@@ -96,16 +100,10 @@ class Stage1 extends Phaser.State {
   		//creating ground sprite
   		this.ground = this.add.tileSprite(0,this.game.height - 10  ,this.game.world.width, 10, 'ground');
 
-		this.car = this.game.add.sprite(-100, 50,'car-idle');
-		  
-		this.hero = this.game.add.sprite(70, 61 , 'hero');
-		this.hero.animations.add('idle', Phaser.Animation.generateFrameNames('hero_idle', 0, 1,"",1), 3, true);
-		this.hero.animations.add('run', Phaser.Animation.generateFrameNames('hero_run', 1, 10,"",1), 12, true);
-		//this.hero.animations.add('jump', 'hero_idle1', 1, true);
-		this.hero.alpha = 0;
-		this.hero.anchor.set(0.5);
-		this.hero.animations.play('run');
+		this.hero = new Player(this.game, 70, 51);
 
+		this.car = this.game.add.sprite(-100, 50,'car-idle');
+		
 		this.weapon = this.game.add.weapon(5, 'bullet');
 		this.weapon.bulletSpeed = 100;
 		//this.weapon.fireLimit = 1;
@@ -136,7 +134,8 @@ class Stage1 extends Phaser.State {
 	createObjects (){
 		this.objects = this.add.group();
 		
-		this.container01 = this.add.sprite(110, this.getObjectPositionAboveGround('container01'),'container01');
+		this.container01 = new Obstacle(this.game, 110, this.getObjectPositionAboveGround('container01'), 'container01');
+		
 		this.container02 = this.add.sprite(280, this.getObjectPositionAboveGround('container01'),'container01');
 		this.cardboardbox = this.add.sprite(
 			80,
@@ -148,8 +147,8 @@ class Stage1 extends Phaser.State {
 		this.objects.add(this.container02);
 		this.objects.add(this.cardboardbox);
 
-		this.eventLab = this.add.sprite(-10, 0);
-		this.eventLab.scale.y = this.game.height;
+		this.eventLab = this.add.sprite(-200, -1000);
+		//this.eventLab.scale.y = this.game.height;
 	}
 	showHero (){
 		this.hero.alpha = 1;
@@ -158,41 +157,14 @@ class Stage1 extends Phaser.State {
   	createBackground(stageLength){
   		this.game.stage.backgroundColor = "#FFF";
 	
-		this.background = this.game.add.tileSprite(0,
-			(this.game.height - this.game.cache.getImage('background').height) ,this.game.world.width,
-			this.game.cache.getImage('background').height,'background'
-		);    
-		this.clouds = this.game.add.tileSprite(0,
-			(this.game.height - this.game.cache.getImage('clouds').height)  ,
-			this.game.world.width,
-			this.game.cache.getImage('clouds').height,
-			'clouds'
-		);         
-		this.cityFar = this.game.add.tileSprite(0,
-			(this.game.height - this.game.cache.getImage('city-far').height)  ,
-			this.game.world.width,
-			this.game.cache.getImage('city-far').height,
-			'city-far'
-		);   
-		this.cityMid = this.game.add.tileSprite(0,
-			(this.game.height - this.game.cache.getImage('city-mid').height) ,
-			this.game.world.width,
-			this.game.cache.getImage('city-mid').height,
-			'city-mid'
-		);     
-		this.cityFront = this.game.add.tileSprite(0,
-			(this.game.height - this.game.cache.getImage('city-front').height) ,
-			this.game.world.width,
-			this.game.cache.getImage('city-front').height,
-			'city-front'
-		);
-		this.fence = this.game.add.tileSprite(0, 37 , this.game.world.width, this.game.cache.getImage('fence').height, 'fence');     
-		this.road = this.game.add.tileSprite(0,
-			(this.game.height - this.game.cache.getImage('road').height) ,
-			this.game.world.width,
-			this.game.cache.getImage('road').height,
-			'road'
-		);    
+		this.addImageToBackground('background');
+		this.addImageToBackground('clouds');
+		this.addImageToBackground('city-far');
+		this.addImageToBackground('city-mid');
+		this.addImageToBackground('city-front');
+		this.addImageToBackground('fence', 0, 37);
+		this.addImageToBackground('road');
+    
 
 		//LAB BG
 		this.bgLab = this.game.add.sprite(144*3, 0, 'bg-lab');     
@@ -230,9 +202,6 @@ class Stage1 extends Phaser.State {
 		this.labComputer.body.immovable=true;
 		this.labComputer.body.allowGravity=false;
 		
-		this.container01.enableBody = true;
-		this.container01.body.immovable=true;
-		this.container01.body.allowGravity=false;
 		this.container02.enableBody = true;
 		this.container02.body.immovable=true;
 		this.container02.body.allowGravity=false;
@@ -372,7 +341,6 @@ class Stage1 extends Phaser.State {
 	}
 	render (){
 		if (this.status == "WIN"){
-			//this.game.debug.text("You won!", 2, 70, "green");
 			this.timerText.text = "You won!";
 		}
 		else{
@@ -389,7 +357,9 @@ class Stage1 extends Phaser.State {
 		}
 
 		this.game.debug.body(this.eventLab);
-		//this.game.debug.body(this.hero);
+		this.game.debug.body(this.hero);
+
+		console.log("Hero: " + this.hero.x + " " + this.hero.y);
 	}
 
 	getGroundPositionY (){
@@ -405,6 +375,19 @@ class Stage1 extends Phaser.State {
 		var boundsB = spriteB.getBounds();
 	
 		return Phaser.Rectangle.intersects(boundsA, boundsB);
+	}
+
+	addImageToBackground(imageName, x, y){
+		if (!x) x = 0;
+		if (!y) y = this.game.height - this.game.cache.getImage(imageName).height; 
+
+		this[imageName] = this.game.add.tileSprite(
+			x
+			, y 
+			, this.game.world.width
+			, this.game.cache.getImage(imageName).height
+			,imageName
+		);   
 	}
 };
 

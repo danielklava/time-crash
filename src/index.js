@@ -1,5 +1,3 @@
-import Utils from 'objects/Utils';
-
 import Preload from 'states/Preload';
 import Boot from 'states/Boot';
 import GameTitle from 'states/GameTitle';
