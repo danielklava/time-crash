@@ -22,7 +22,7 @@ Main.Stage1.prototype = {
 		this.createActors();
 		
 		//add phisics to elements (oh, really?)
-		this.addPhisicsToElements(gravity);
+		this.addPhysicsToElements(gravity);
 
 		//camera settings
 		this.adjustCamera();
@@ -31,7 +31,7 @@ Main.Stage1.prototype = {
 		this.timer = Main.game.time.create();
 		this.timerEvent = this.timer.add(Phaser.Timer.MINUTE * 0.5, this.endTimer, this);
 		this.timer.start();
-		this.timerText = this.game.add.bitmapText(100, 65, "3By5Font", "", 16);
+		this.timerText = this.game.add.bitmapText(100, 65, "font", "", 16);
 
 		this.timerText.fixedToCamera = true;
 		this.timerText.cameraOffset.setTo(100,65);
@@ -53,11 +53,15 @@ Main.Stage1.prototype = {
 	addDialogText: function(speaker, sentence){
 		this.inputEnabled = false;
 		
-		this.dialog = this.game.add.sprite(1, 1, 'dialog');
-		this.portrait = this.game.add.sprite(3,3,"selene_portrait");
+		var offsetX = this.game.camera.x;
 
-		this.speaker = this.game.add.bitmapText(25, 5, "3By5Font", speaker + ":", 8);
-		this.buffer = this.game.add.bitmapText(25, 15, "3By5Font", "", 8);
+		this.dialog = this.game.add.sprite(1 + offsetX, 1, 'dialog');
+		this.portrait = this.game.add.sprite(3 + offsetX,3, speaker.toLowerCase() + "_portrait");
+		this.portrait.animations.add('talk');
+		this.portrait.animations.play('talk', 16, true);
+
+		this.speaker = this.game.add.bitmapText(25 + offsetX, 5, "font", speaker + ":", 8);
+		this.buffer  = this.game.add.bitmapText(25 + offsetX, 15, "font", "", 8);
 		
 		var i =-1;
 		this.game.time.events.loop(Phaser.Timer.SECOND*0.10, function() {
@@ -89,17 +93,15 @@ Main.Stage1.prototype = {
         return minutes.substr(-2) + ":" + seconds.substr(-2);   
     },
 	adjustStageWorld: function(stageLength){
-		this.game.world.setBounds(0, 0, stageLength, this.game.height);
+		this.game.world.setBounds(0, 0, stageLength, this.game.height	);
 	},
 	createActors : function (){
   		//creating ground sprite
   		this.ground = this.add.tileSprite(0,this.game.height - 10  ,this.game.world.width, 10, 'ground');
-		
-		this.car = this.game.add.sprite(-100, 53,'car-driving');
-		this.car.animations.add('drive');
-		this.car.animations.play('drive', 5, true);
 
-		this.hero = this.game.add.sprite(40, 61 , 'hero');
+		this.car = this.game.add.sprite(-100, 50,'car-idle');
+		  
+		this.hero = this.game.add.sprite(70, 61 , 'hero');
 		this.hero.animations.add('idle', Phaser.Animation.generateFrameNames('hero_idle', 0, 1,"",1), 3, true);
 		this.hero.animations.add('run', Phaser.Animation.generateFrameNames('hero_run', 1, 10,"",1), 12, true);
 		//this.hero.animations.add('jump', 'hero_idle1', 1, true);
@@ -148,6 +150,9 @@ Main.Stage1.prototype = {
 		this.objects.add(this.container01);
 		this.objects.add(this.container02);
 		this.objects.add(this.cardboardbox);
+
+		this.eventLab = this.add.sprite(200, 0);
+		this.eventLab.scale.y = this.game.height;
 	},
 	showHero : function(){
 		this.hero.alpha = 1;
@@ -208,7 +213,7 @@ Main.Stage1.prototype = {
 	    this.game.world.bringToTop(this.cityFront);
 	    this.game.world.bringToTop(this.car);
 	},
-  	addPhisicsToElements: function(gravity){
+  	addPhysicsToElements: function(gravity){
   		this.physics.arcade.enable(this.hero);
 		this.physics.arcade.enable(this.ground);
 		this.physics.arcade.enable(this.labComputer);
@@ -218,9 +223,15 @@ Main.Stage1.prototype = {
 		this.physics.arcade.enable(this.raptor);
 		this.physics.arcade.enable(this.raptor2);
 
+		this.physics.arcade.enable(this.eventLab);
+
+		this.eventLab.enableBody = true;
+		this.eventLab.body.immovable = true;
+		this.eventLab.body.allowGravity = false;
+
 		this.labComputer.enableBody = true;
 		this.labComputer.body.immovable=true;
-		this.labComputer.body.allowGravity=false
+		this.labComputer.body.allowGravity=false;
 		
 		this.container01.enableBody = true;
 		this.container01.body.immovable=true;
@@ -265,6 +276,9 @@ Main.Stage1.prototype = {
 	},
 	update: function() {
 		this.updateBackground();
+
+		if (Utils.checkOverlap(this.hero, this.eventLab)) this.startEventLab();
+
 		this.physics.arcade.collide(this.hero, this.ground, this.playerHit, null, this);
 		this.physics.arcade.overlap(this.hero, this.labComputer, this.interactComputer, null, this);
 		this.physics.arcade.collide(this.hero, this.container01);
@@ -326,6 +340,9 @@ Main.Stage1.prototype = {
 
 		this.updateEnemies();
 	},
+	startEventLab : function(){
+		this.addDialogText('Selene', 'This is it.');
+	},
 	restartStage : function(){
 		this.game.state.restart();
 	},
@@ -348,7 +365,7 @@ Main.Stage1.prototype = {
 	bulletHitEnemy : function(bullet, object){	
 		bullet.destroy();	
 
-		object.destroy();	
+		object.destroy();
 
 		this.raptorSound.play();
 	},
@@ -374,6 +391,7 @@ Main.Stage1.prototype = {
 			}
 		}
 
+		this.game.debug.body(this.eventLab);
 		//this.game.debug.body(this.hero);
 	},
 };
@@ -384,5 +402,11 @@ Utils = {
 	},
 	getObjectPositionAboveGround : function(spriteName){
 		return Utils.getGroundPositionY() - Main.game.cache.getImage(spriteName).height;
+	},
+	checkOverlap : function(spriteA, spriteB) {
+		var boundsA = spriteA.getBounds();
+		var boundsB = spriteB.getBounds();
+	
+		return Phaser.Rectangle.intersects(boundsA, boundsB);
 	}
 }

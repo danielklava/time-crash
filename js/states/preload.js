@@ -32,7 +32,7 @@ Main.Preload.prototype = {
     this.game.load.atlas('hero',  'assets/images/hero_atlas.png', 'assets/images/hero_atlas.json');
 
     //NPCS
-    this.game.load.image('selene_portrait',  'assets/images/selene_portrait.png');
+    this.game.load.spritesheet('selene_portrait',  'assets/images/selene_portrait.png', 20, 20);
 
     //BULLET
     this.game.load.image('bullet',  'assets/images/bullet.png');
@@ -47,7 +47,11 @@ Main.Preload.prototype = {
     this.game.load.audio('raptorSound', ['assets/audio/raptor.wav'], false);
     
     //FONT
-    this.game.load.bitmapFont('3By5Font','assets/fonts/3 by 5 Font.png', 'assets/fonts/3 by 5 Font.fnt');
+    this.game.load.bitmapFont('font','assets/fonts/font.png', 'assets/fonts/font.fnt');
+
+    //LEVELS
+    this.game.load.tilemap('tilemap_1', 'assets/levels/1_city.json', null, Phaser.Tilemap.TILED_JSON);
+    this.game.load.image('tiles_1', 'assets/images/tileset_stage1.png');
   },
   
   create : function() {
