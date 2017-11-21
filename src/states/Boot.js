@@ -1,9 +1,8 @@
 class Boot extends Phaser.State {
 
-	preload (){
-
-	}
-
+	/**
+	 * Sets up all rendering configuration necessary.
+	 */
 	create () {
 		this.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
 
