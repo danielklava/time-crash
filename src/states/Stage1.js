@@ -2,22 +2,23 @@ import Player from '../objects/Player';
 import Obstacle from '../objects/Obstacle';
 import DialogBox from '../objects/DialogBox';
 import Soldier from '../objects/Soldier';
+import Raptor from '../objects/Raptor';
 
 class Stage1 extends Phaser.State {
 
 	create() {
 		this.GRAVITY = 350;
 		this.STAGE_LENGTH = 144 * 4;
-	
+
+		//Stage world settings
+		this.adjustStageWorld(this.STAGE_LENGTH);
+		
 		this.camera.flash("#000000");
 		this.game.inputEnabled = false;
 
 		//Enble Arcade Physics
 		this.physics.startSystem(Phaser.Physics.ARCADE);
 		this.physics.arcade.gravity.y = this.GRAVITY;
-
-		//Stage world settings
-		this.adjustStageWorld(this.STAGE_LENGTH);
 
 		this.createBackground();
 		this.createObjects();	
@@ -38,7 +39,6 @@ class Stage1 extends Phaser.State {
 		this.timerText.fixedToCamera = true;
 		this.timerText.cameraOffset.setTo(100,65);
 
-		this.raptorSound = this.game.add.audio('raptorSound');
 		this.themeMusic = this.game.add.audio('theme', 1, true);
 		this.themeMusic.play();
 	}
@@ -78,9 +78,10 @@ class Stage1 extends Phaser.State {
   		//creating ground sprite
   		this.ground = this.add.tileSprite(0, this.game.world.bounds.height - 10  ,this.game.world.width, 10, 'ground');
 
-		this.hero = new Player(this.game, 70, 51, 'hero');
+		this.hero = new Player(this.game, 70, this.getObjectPositionAboveGround('hero'), 'hero');
+		this.hero.y = this.getGroundPositionY() - this.hero.height;
 		
-		this.car = this.game.add.sprite(-100, this.getObjectPositionAboveGround('car-idle'),'car-idle');
+		this.car = this.game.add.sprite(-100, this.getObjectPositionAboveGround('car-idle') + 3,'car-idle');
 		
 		this.carArrives = this.add.tween(this.car).to({ x:0}, 2000, Phaser.Easing.Cubic.InOut, true, 0, 0, false);
 		this.carArrives.onComplete.add(this.showHero, this);
@@ -90,12 +91,9 @@ class Stage1 extends Phaser.State {
 		this.soldier = new Soldier(this.game, 130, 20, 'soldier');
 		this.soldiers.add(this.soldier);
 
+		this.raptors = this.add.group();
 		this.raptor = this.game.add.sprite(190,45 ,'raptor');
-		this.raptor.scale.x *= -1;
-		this.raptor.animations.add('run', Phaser.Animation.generateFrameNames('raptor_run', 0, 6,"",1), 6, true);
-		this.raptor.animations.play('run');
-		this.raptor.anchor.set(0.5);
-		this.raptor.deathSound = this.raptorSound;
+		this.raptors.add(this.raptor);
 	}
 	createObjects (){
 		this.objects = this.add.group();
@@ -151,7 +149,6 @@ class Stage1 extends Phaser.State {
   	}
   	adjustCamera(){
 		this.camera.follow(this.hero);  
-		//this.camera.follow(this.hero, Phaser.Camera.FOLLOW_PLATFORMER, 0.1, 0.1);
 	}
 	interactComputer (){
 		console.log("Interact");
@@ -173,17 +170,34 @@ class Stage1 extends Phaser.State {
 		
 		//Collision events
 		this.physics.arcade.collide(this.hero, this.ground);
-		//this.physics.arcade.collide(this.hero, this.container01);
-		//this.physics.arcade.collide(this.hero, this.container02);
-		//this.physics.arcade.collide(this.hero, this.cardboardbox);
 		this.physics.arcade.collide(this.hero, this.objects);
-		this.physics.arcade.collide(this.hero, this.raptor, this.restartStage, null, this);
+		this.physics.arcade.collide(this.hero, this.raptors, this.restartStage, null, this);
 		
-		this.physics.arcade.collide(this.objects, this.raptor, this.enemyHitWall);
+		this.physics.arcade.collide(this.objects, this.raptors, this.enemyHitWall);
 		this.physics.arcade.collide(this.objects, this.soldiers, this.enemyHitWall);
 		
-		this.physics.arcade.collide(this.raptor, this.ground);
-		this.physics.arcade.collide(this.raptor, this.objects);
+		this.physics.arcade.collide(this.raptors, this.ground);
+		this.physics.arcade.collide(this.soldiers, this.ground);
+
+		for	(var i = 0; i < this.soldiers.length; i ++){
+			var soldier = this.soldiers.children[i];
+
+			if (Math.round(soldier.y) == Math.round(this.hero.y)){
+				console.log("Seen! Begin chase.");
+
+				if (soldier.x > this.hero.x && soldier.direction == -1){
+					soldier.body.velocity.x = -80;
+					soldier.body.velocity.y = -100;
+					
+					soldier.fire();
+				}else if (soldier.x < this.hero.x && soldier.direction == 1){
+					soldier.body.velocity.x = 80;
+					soldier.body.velocity.y = -100;
+					
+					soldier.fire();
+				}
+			}
+		}
 		
 		this.updateEnemies();
 	}
@@ -206,18 +220,17 @@ class Stage1 extends Phaser.State {
 			}
 	}
 	enemyHitWall  (object, enemy){
-		if (enemy instanceof Soldier){
+		if (enemy instanceof Soldier || enemy instanceof Raptor){
 			enemy.calculateRoute(object);
-		}
-		else if (!enemy instanceof Obstacle){
-			enemy.scale.x *= -1;
 		}
 	}
 	bulletHitEnemy (bullet, object){	
 		bullet.destroy();	
 		object.destroy();
 
-		this.raptorSound.play();
+		if (object instanceof Raptor){
+			object.die();
+		}
 	}
 	createBackground(stageLength){
 		this.game.stage.backgroundColor = "#764b86";
@@ -228,8 +241,7 @@ class Stage1 extends Phaser.State {
 		this.cityMid = this.addImageToBackground('city-mid');
 		this.cityFront = this.addImageToBackground('city-front');
 		this.fence = this.addImageToBackground('fence', 0, this.getObjectPositionAboveGround('fence'));
-		//this.road = this.addImageToBackground('road', 0,);
-	
+		
 		//LAB BG
 		this.bgLab = this.game.add.sprite(144*3, 0, 'bg-lab');     
 		this.labWalls = this.game.add.sprite(144*3, 0, 'lab-walls');          
@@ -263,16 +275,18 @@ class Stage1 extends Phaser.State {
 			}
 		}
 
-		//	this.game.debug.body(this.eventLab);
-		this.game.debug.body(this.hero);
+		this.game.debug.body(this.eventLab);
+		//this.game.debug.body(this.hero);
 
 		for(var i = 0; i < this.soldiers.length; i++){
-			this.game.debug.body(this.soldiers.children[i]);
+			//this.game.debug.body(this.soldiers.children[i]);
+		}
+		for(var i = 0; i < this.raptors.length; i++){
+			this.game.debug.body(this.raptors.children[i]);
 		}
 	}
 
 	getGroundPositionY (){
-		//return this.game.height - this.game.cache.getImage('ground').height;
 		return this.game.world.bounds.height - this.game.cache.getImage('ground').height;
 	}
 	

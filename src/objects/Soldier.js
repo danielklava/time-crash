@@ -54,6 +54,12 @@ export default class Soldier extends Phaser.Sprite{
     update(){
         this.scale.x = this.direction;
         this.body.velocity.x = 25 * this.direction;
+
+        if (this.direction == 1){
+            this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
+        } else {        
+            this.weapon.fireAngle = Phaser.ANGLE_LEFT;
+        }
     }
 
     calculateRoute(obstacle) {
@@ -61,5 +67,9 @@ export default class Soldier extends Phaser.Sprite{
             || this.direction < 0 && this.x < obstacle.x){
             this.direction *= -1;
         }	
+    }
+
+    fire(){
+        this.weapon.fire();
     }
 };
