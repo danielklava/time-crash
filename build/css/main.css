@@ -1,0 +1,33 @@
+body{
+	background-color: #777;
+	margin: 0 auto;
+	font-family: 'Press Start 2P', cursive;
+	font-size: 8px;
+}
+#gameArea{
+	/*width: 50%;
+	height: 50%;*/
+	margin: 0 auto;
+}
+#gameArea canvas{margin-left: 0px !important;}
+
+#info{
+	max-width: 960px;
+	margin: 0 auto;
+	display: block;
+	text-align: center;
+}
+#info a {
+	display: inline-block;
+	background-color: #999;
+	border: 1px solid #555;
+	padding: 10px 20px;
+	color: #FFF;
+	border-radius: 5px;
+	text-decoration: none;
+}
+#info a:hover{
+	background-color: #AAA;
+}
+body{color: #DDD}
+h1, h2{color: #85caca};
