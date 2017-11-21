@@ -1,8 +1,8 @@
 # Time Crash
 
-In a post-apocalyptic Earth, you must reach the origin point of the catastrophe to turn off the lab expriment responsible for all the destruction - but you must face elements out-of-time to reach it, like velociraptors (with feathers, since this is a scientific acurate game), and Napoleon's soldiers.
+In a post-apocalyptic Earth, you must reach the origin point of the catastrophe to turn off the lab experiment responsible for all the destruction - but you must face elements out-of-time to reach it, like velociraptors (with feathers, since this is a scientific acurate game), and Napoleon's soldiers.
 
-_Earth cannot survive another Time Crash. You have 30 seconds!_
+_Earth cannot survive a Time Crash. You have 30 seconds!_
 
 ## About
 
