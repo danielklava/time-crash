@@ -47,11 +47,11 @@ class Preload extends Phaser.State {
     this.game.load.atlas('hero', 'assets/images/hero_atlas.png', 'assets/images/hero_atlas.json');
 
     //NPCS
-    this.game.load.spritesheet('soldier', 'assets/images/soldier.png', 21, 29, 1);
     this.game.load.spritesheet('selene_portrait', 'assets/images/selene_portrait.png', 20, 20);
 
     //ENEMIES
-    this.game.load.atlas('raptor', 'assets/images/raptor_atlas.png', 'assets/images/raptor_atlas.json');
+    this.game.load.spritesheet('soldier', 'assets/images/soldier.png', 21, 29);
+    this.game.load.spritesheet('raptor', 'assets/images/raptor-sheet.png', 28, 28);
     
     //AUDIO
     this.game.load.audio('theme', ['assets/audio/theme.wav'], true);
@@ -64,8 +64,6 @@ class Preload extends Phaser.State {
   }
 
   create() {
-    this.stage.backgroundColor = "#FFF";
-
     this.state.start('Stage1', true, false);
   }
 }

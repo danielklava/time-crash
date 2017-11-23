@@ -14,7 +14,7 @@ class Stage1 extends Phaser.State {
 		this.adjustStageWorld(this.STAGE_LENGTH);
 		
 		this.camera.flash("#000000");
-		this.game.inputEnabled = false;
+		this.game.inputEnabled = true;//TODO revert to false;
 
 		//Enble Arcade Physics
 		this.physics.startSystem(Phaser.Physics.ARCADE);
@@ -41,8 +41,21 @@ class Stage1 extends Phaser.State {
 
 		this.themeMusic = this.game.add.audio('theme', 1, true);
 		this.themeMusic.play();
+
+		this.createLinesOfSight(this.soldiers);
+		this.createLinesOfSight(this.raptors);		
 	}
 
+	createLinesOfSight(group){
+		this.linesOfSight = this.linesOfSight || [];
+		for(var i = 0; i < group.length; i ++){
+			var line = new Phaser.Line(group.children[i].x, group.children[i].y, this.hero.x, this.hero.y);
+			line.origin = group.children[i];
+			line.target = this.hero;
+
+			this.linesOfSight.push(line);
+		}
+	}
 	/**
 	 * The method to add a DialogBox object in the top of the screen.
 	 * While the dialog is showing text, all input from the player is disabled.
@@ -88,25 +101,24 @@ class Stage1 extends Phaser.State {
 		this.carArrives.start();
 
 		this.soldiers = this.add.group();
-		this.soldier = new Soldier(this.game, 130, 20, 'soldier');
-		this.soldiers.add(this.soldier);
+		this.soldiers.addMultiple([
+			new Soldier(this.game, 130, this.getObjectPositionAboveGround('soldier') - this.game.cache.getImage('container01').height, 'soldier'),
+			new Soldier(this.game, 230, this.getObjectPositionAboveGround('soldier'), 'soldier')
+		]);
 
 		this.raptors = this.add.group();
-		this.raptor = this.game.add.sprite(190,45 ,'raptor');
-		this.raptors.add(this.raptor);
+		this.raptors.addMultiple([
+			new Raptor(this.game, 190, 45, 'raptor')
+		]);
 	}
 	createObjects (){
 		this.objects = this.add.group();
 		
-		this.container01 = new Obstacle(this.game, 110, this.getObjectPositionAboveGround('container01'), 'container01');
-		this.container02 = new Obstacle(this.game, 280, this.getObjectPositionAboveGround('container01'),'container01');
-		this.cardboardbox = new Obstacle(this.game, 80, this.getObjectPositionAboveGround('cardboardbox'), 'cardboardbox');
-		
 		this.objects.addMultiple(
 			[
-				this.container01 
-				,this.container01 
-				,this.cardboardbox
+				new Obstacle(this.game, 110, this.getObjectPositionAboveGround('container01'), 'container01') 
+				,new Obstacle(this.game, 280, this.getObjectPositionAboveGround('container01'), 'container01')
+				,new Obstacle(this.game, 80, this.getObjectPositionAboveGround('cardboardbox'), 'cardboardbox')
 			]
 		);
 
@@ -128,7 +140,6 @@ class Stage1 extends Phaser.State {
   	addPhysicsToElements(gravity){
 		this.physics.arcade.enable(this.ground);
 		this.physics.arcade.enable(this.labComputer);
-		this.physics.arcade.enable(this.raptor);
 
 		this.physics.arcade.enable(this.eventLab);
 
@@ -143,9 +154,6 @@ class Stage1 extends Phaser.State {
 		this.ground.body.immovable = true;
 	    this.ground.body.allowGravity = false;
 
-		this.raptor.body.allowGravity=true;
-		this.raptor.enableBody = true;
-		this.raptor.body.collideWorldBounds = true;
   	}
   	adjustCamera(){
 		this.camera.follow(this.hero);  
@@ -156,6 +164,43 @@ class Stage1 extends Phaser.State {
 		return;
 	}
 	update() {
+		this.linesOfSight.forEach(function(l){l.fromSprite(l.origin, l.target)});
+
+		for(var l = 0; l < this.linesOfSight.length; l++){
+			var line = this.linesOfSight[l];
+			
+			var intersectsWithLevel = false;
+			var degrees = line.angle * 180/ Math.PI;
+
+			for(var i = 0; i < this.objects.length; i ++){  
+				if (Phaser.Line.intersectsRectangle(line, this.objects.children[i].body)){
+					intersectsWithLevel = true;
+					break;
+				}
+			}
+			if (intersectsWithLevel) continue;
+			else {
+				if (line.origin.startled) continue;
+
+				var detection = false;
+
+				if (line.origin.direction == 1 && line.target.x > line.origin.x
+					&& ( degrees >= 340 && degrees <= 360 || degrees >= 0 && degrees <= 20)){
+					detection = true;
+				}
+				if (line.origin.direction == -1 && line.target.x < line.origin.x
+					&& degrees >= 160 && degrees <= 240){
+					detection = true;
+				}
+				if (line.length > 50) detection = false;
+		
+				if (detection){
+					line.origin.startle();
+				}
+				line.detection = detection;
+			}
+		}	
+
 		this.updateBackground();
 
 		if (this.eventLab != null && this.checkOverlap(this.hero, this.eventLab)) 
@@ -171,7 +216,7 @@ class Stage1 extends Phaser.State {
 		//Collision events
 		this.physics.arcade.collide(this.hero, this.ground);
 		this.physics.arcade.collide(this.hero, this.objects);
-		this.physics.arcade.collide(this.hero, this.raptors, this.restartStage, null, this);
+		//this.physics.arcade.collide(this.hero, this.raptors, this.restartStage, null, this);
 		
 		this.physics.arcade.collide(this.objects, this.raptors, this.enemyHitWall);
 		this.physics.arcade.collide(this.objects, this.soldiers, this.enemyHitWall);
@@ -180,11 +225,29 @@ class Stage1 extends Phaser.State {
 		this.physics.arcade.collide(this.soldiers, this.ground);
 
 		for	(var i = 0; i < this.soldiers.length; i ++){
+			this.physics.arcade.overlap(
+				this.soldiers.children[i].weapon.bullets
+				, this.hero
+				, this.bulletHitEnemy
+				, null
+				, this);		
+		}
+
+		this.updateEnemies();
+	}
+	startEventLab (){
+		this.addDialogText("Selene", "This is it.");
+		this.eventLab.destroy();
+	}
+	restartStage (){
+		this.game.state.restart();
+	}
+	updateEnemies (){
+		/*TODO review : for	(var i = 0; i < this.soldiers.length; i ++){
 			var soldier = this.soldiers.children[i];
 
-			if (Math.round(soldier.y) == Math.round(this.hero.y)){
-				console.log("Seen! Begin chase.");
-
+			if (Math.round(soldier.height + soldier.body.position.y) == Math.round(this.hero.body.position.y + this.hero.height)){
+				
 				if (soldier.x > this.hero.x && soldier.direction == -1){
 					soldier.body.velocity.x = -80;
 					soldier.body.velocity.y = -100;
@@ -197,39 +260,21 @@ class Stage1 extends Phaser.State {
 					soldier.fire();
 				}
 			}
-		}
-		
-		this.updateEnemies();
-	}
-	startEventLab (){
-		this.addDialogText("Selene", "This is it.");
-		this.eventLab.destroy();
-	}
-	restartStage (){
-		this.game.state.restart();
-	}
-	updateEnemies (){
-		if (this.raptor.body != null)
-			if (Math.random() > 0.5){
-				if (this.raptor.scale.x > 0){
-					this.raptor.body.velocity.x = 30;
-				}
-				else {
-					this.raptor.body.velocity.x = -30;
-				}
-			}
+		}*/
 	}
 	enemyHitWall  (object, enemy){
 		if (enemy instanceof Soldier || enemy instanceof Raptor){
 			enemy.calculateRoute(object);
 		}
 	}
-	bulletHitEnemy (bullet, object){	
-		bullet.destroy();	
-		object.destroy();
+	bulletHitEnemy (target, bullet){	
+		bullet.destroy();
 
-		if (object instanceof Raptor){
-			object.die();
+		if (target instanceof Raptor){
+			target.die();
+		}
+		if (target instanceof Player){
+			target.hit();
 		}
 	}
 	createBackground(stageLength){
@@ -275,14 +320,25 @@ class Stage1 extends Phaser.State {
 			}
 		}
 
-		this.game.debug.body(this.eventLab);
-		//this.game.debug.body(this.hero);
+		if (document.querySelector('#debugInfo').checked){
+			this.game.debug.body(this.eventLab);
+			this.game.debug.body(this.hero);
 
-		for(var i = 0; i < this.soldiers.length; i++){
-			//this.game.debug.body(this.soldiers.children[i]);
-		}
-		for(var i = 0; i < this.raptors.length; i++){
-			this.game.debug.body(this.raptors.children[i]);
+			for(var i = 0; i < this.soldiers.length; i++){
+				this.game.debug.body(this.soldiers.children[i]);
+			}
+			for(var i = 0; i < this.raptors.length; i++){
+				this.game.debug.body(this.raptors.children[i]);
+			}
+
+			for(var l = 0; l < this.linesOfSight.length; l++){
+				var line = this.linesOfSight[l];
+				if (line.detection){
+					this.game.debug.geom(line, "#0FF");
+				}else{
+					this.game.debug.geom(line, "#F00");
+				}
+			}		
 		}
 	}
 

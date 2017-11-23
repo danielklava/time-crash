@@ -1,53 +1,50 @@
-export default class Raptor extends Phaser.Sprite{
+import Enemy from "./Enemy";
+
+export default class Raptor extends Enemy{
     constructor(game, x, y, sprite){
         
         super(game, x, y, sprite);  
 
-        this.alpha = 1;
-        this.anchor.set(0.5);
-        this.direction = 1;
-
-        //this.initAnimation();    
-        this.initPhysics();
-        this.initAudio();
-
-        this.moving = true;
-
-        game.add.existing(this);
+        this.SPEED = 45;
     }
 
     initAnimation(){
-    }
+        this.animations.add('idle', [0], 1, true);
+        this.animations.add('startled', [1], 1, true);
+        this.animations.play('idle');
+    }   
 
     initAudio(){
 		this.raptorSound = this.game.add.audio('raptorSound');
     }
 
     initPhysics() {
-        this.game.physics.arcade.enable(this);
-        this.enableBody = true;
-
-		this.body.gravity.y = this.game.physics.arcade.gravity.y;
-		this.body.collideWorldBounds = true;
-		this.body.maxVelocity.y = 500;
-		this.body.setSize(15,29);
+        super.initPhysics();
+		this.body.setSize(28,23, 0, 5);
     }
     
     update(){
-        this.scale.x = this.direction;
-        this.body.velocity.x = 25 * this.direction;
+        if (!this.startled){
+            this.scale.x = this.direction;
+            this.body.velocity.x = this.SPEED * this.direction;
+        }
     }
 
     calculateRoute(obstacle) {
-        if(this.direction > 0 && this.x > obstacle.x + obstacle.width 
-            || this.direction < 0 && this.x < obstacle.x){
-            this.direction *= -1;
-        }	
+        super.calculateRoute(obstacle);
     }
 
     die(){
         this.raptorSound.play();
         this.body.destroy();
+    }
+
+    resumePatrol(){
+        supert.resumePatrol();
+    }
+
+    startle() {
+        super.startle();
     }
 
     playDeathSound() {

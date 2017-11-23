@@ -3,6 +3,8 @@ export default class Obstacle extends Phaser.Sprite{
         super(game, x, y, sprite);
 
         this.initPhysics();
+
+        game.add.existing(this);
     }
 
     initPhysics(){

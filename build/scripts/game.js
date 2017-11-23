@@ -45,7 +45,7 @@ var Game = function (_Phaser$Game) {
 	function Game() {
 		_classCallCheck(this, Game);
 
-		var _this = _possibleConstructorReturn(this, (Game.__proto__ || Object.getPrototypeOf(Game)).call(this, 144, 81, Phaser.CANVAS, 'gameArea', null));
+		var _this = _possibleConstructorReturn(this, (Game.__proto__ || Object.getPrototypeOf(Game)).call(this, 288, 81, Phaser.CANVAS, 'gameArea', null));
 
 		_this.antialias = false;
 
@@ -69,9 +69,9 @@ var Game = function (_Phaser$Game) {
 	return Game;
 }(Phaser.Game);
 
-new Game();
+var game = new Game();
 
-},{"states/Boot":7,"states/GameTitle":8,"states/Preload":9,"states/Stage1":10}],2:[function(require,module,exports){
+},{"states/Boot":8,"states/GameTitle":9,"states/Preload":10,"states/Stage1":11}],2:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -185,6 +185,150 @@ var DialogBox = function (_Phaser$Sprite) {
 exports.default = DialogBox;
 
 },{}],3:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () {
+    function defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+        }
+    }return function (Constructor, protoProps, staticProps) {
+        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+    };
+}();
+
+function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+        throw new TypeError("Cannot call a class as a function");
+    }
+}
+
+function _possibleConstructorReturn(self, call) {
+    if (!self) {
+        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }return call && (typeof call === "object" || typeof call === "function") ? call : self;
+}
+
+function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+        throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+    }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+}
+
+var Enemy = function (_Phaser$Sprite) {
+    _inherits(Enemy, _Phaser$Sprite);
+
+    function Enemy(game, x, y, sprite) {
+        _classCallCheck(this, Enemy);
+
+        var _this = _possibleConstructorReturn(this, (Enemy.__proto__ || Object.getPrototypeOf(Enemy)).call(this, game, x, y, sprite));
+
+        _this.alpha = 1;
+        _this.anchor.set(0.5);
+        _this.direction = 1;
+
+        _this.initAnimation();
+        _this.initPhysics();
+        _this.initAudio();
+
+        _this.moving = true;
+
+        game.add.existing(_this);
+        return _this;
+    }
+
+    _createClass(Enemy, [{
+        key: 'initAnimation',
+        value: function initAnimation() {
+            /**
+             * Should be overriden in the inherited type.
+            */
+        }
+    }, {
+        key: 'initAudio',
+        value: function initAudio() {
+            /**
+             * Should be overriden in the inherited type.
+            */
+        }
+    }, {
+        key: 'initPhysics',
+        value: function initPhysics() {
+            this.game.physics.arcade.enable(this);
+            this.enableBody = true;
+
+            this.body.gravity.y = this.game.physics.arcade.gravity.y;
+            this.body.collideWorldBounds = true;
+            this.body.maxVelocity.y = 500;
+        }
+    }, {
+        key: 'update',
+        value: function update() {
+            if (!this.startled) {
+                this.scale.x = this.direction;
+                this.body.velocity.x = 25 * this.direction;
+            }
+
+            if (this.direction == 1) {
+                this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
+            } else {
+                this.weapon.fireAngle = Phaser.ANGLE_LEFT;
+            }
+        }
+    }, {
+        key: 'calculateRoute',
+        value: function calculateRoute(obstacle) {
+            if (!this.startled) {
+                if (this.direction > 0 && this.x > obstacle.x + obstacle.width || this.direction < 0 && this.x < obstacle.x) {
+                    this.direction *= -1;
+                }
+
+                if (this.body.touching.left) {
+                    this.direction = 1;
+                } else if (this.body.touching.right) {
+                    this.direction = -1;
+                }
+            }
+        }
+    }, {
+        key: 'die',
+        value: function die() {
+            this.alpha = 0;
+        }
+    }, {
+        key: 'resumePatrol',
+        value: function resumePatrol() {
+            this.startled = false;
+            this.animations.play('idle');
+        }
+    }, {
+        key: 'startle',
+        value: function startle() {
+            this.animations.play('startled');
+            this.body.velocity.x = 0;
+            console.log(this.startled);
+            if (this.startled != true) {
+                console.log("Startled! Waiting for 1 second.");
+                this.startled = true;
+                this.game.time.events.add(Phaser.Timer.SECOND * 1, function () {
+                    console.log("Resuming patrol");
+                    this.resumePatrol();
+                }, this);
+            }
+        }
+    }]);
+
+    return Enemy;
+}(Phaser.Sprite);
+
+exports.default = Enemy;
+;
+
+},{}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -228,6 +372,8 @@ var Obstacle = function (_Phaser$Sprite) {
         var _this = _possibleConstructorReturn(this, (Obstacle.__proto__ || Object.getPrototypeOf(Obstacle)).call(this, game, x, y, sprite));
 
         _this.initPhysics();
+
+        game.add.existing(_this);
         return _this;
     }
 
@@ -246,7 +392,7 @@ var Obstacle = function (_Phaser$Sprite) {
 
 exports.default = Obstacle;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -289,8 +435,11 @@ var Player = function (_Phaser$Sprite) {
 
         var _this = _possibleConstructorReturn(this, (Player.__proto__ || Object.getPrototypeOf(Player)).call(this, game, x, y, sprite));
 
+        _this.SPEED = 45;
+
         _this.alpha = 1;
         _this.anchor.set(0.5);
+        _this.direction = 1;
 
         _this.initAnimation();
         _this.initPhysics();
@@ -359,29 +508,23 @@ var Player = function (_Phaser$Sprite) {
 
             if (this.game.inputEnabled) {
                 if (this.cursors.left.isDown) {
-                    this.body.velocity.x = -45;
+                    this.direction = -1;
+                    this.scale.x = this.direction;
+                    this.body.velocity.x = this.SPEED * this.direction;
                     this.animations.play('run');
-
-                    if (this.scale.x == 1) {
-                        this.scale.x = -1;
-                    }
 
                     this.weapon.fireAngle = Phaser.ANGLE_LEFT;
                 } else if (this.cursors.right.isDown) {
-                    this.body.velocity.x = 45;
+                    this.direction = 1;
+                    this.scale.x = this.direction;
+                    this.body.velocity.x = this.SPEED * this.direction;
                     this.animations.play('run');
-
-                    if (this.scale.x == -1) {
-                        this.scale.x = 1;
-                    }
 
                     this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
                 } else if (this.cursors.down.isDown) {
-                    this.body.velocity.x = 0;
-                    this.animations.play('crouch');
+                    this.crouch();
                 } else {
-                    this.body.velocity.x = 0;
-                    this.animations.play('idle');
+                    this.stop();
                 }
 
                 if (this.jumpButton.isDown && this.body.touching.down) {
@@ -395,6 +538,12 @@ var Player = function (_Phaser$Sprite) {
             }
         }
     }, {
+        key: 'crouch',
+        value: function crouch() {
+            this.body.velocity.x = 0;
+            this.animations.play('crouch');
+        }
+    }, {
         key: 'jump',
         value: function jump() {
             this.body.velocity.y = -210;
@@ -406,120 +555,17 @@ var Player = function (_Phaser$Sprite) {
             this.body.velocity.x = 0;
             this.animations.play('idle');
         }
+    }, {
+        key: 'hit',
+        value: function hit() {
+            console.log("Player hit!");
+        }
     }]);
 
     return Player;
 }(Phaser.Sprite);
 
 exports.default = Player;
-;
-
-},{}],5:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () {
-    function defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-        }
-    }return function (Constructor, protoProps, staticProps) {
-        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-    };
-}();
-
-function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-    }
-}
-
-function _possibleConstructorReturn(self, call) {
-    if (!self) {
-        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }return call && (typeof call === "object" || typeof call === "function") ? call : self;
-}
-
-function _inherits(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-        throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-    }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-}
-
-var Raptor = function (_Phaser$Sprite) {
-    _inherits(Raptor, _Phaser$Sprite);
-
-    function Raptor(game, x, y, sprite) {
-        _classCallCheck(this, Raptor);
-
-        var _this = _possibleConstructorReturn(this, (Raptor.__proto__ || Object.getPrototypeOf(Raptor)).call(this, game, x, y, sprite));
-
-        _this.alpha = 1;
-        _this.anchor.set(0.5);
-        _this.direction = 1;
-
-        //this.initAnimation();    
-        _this.initPhysics();
-        _this.initAudio();
-
-        _this.moving = true;
-
-        game.add.existing(_this);
-        return _this;
-    }
-
-    _createClass(Raptor, [{
-        key: 'initAnimation',
-        value: function initAnimation() {}
-    }, {
-        key: 'initAudio',
-        value: function initAudio() {
-            this.raptorSound = this.game.add.audio('raptorSound');
-        }
-    }, {
-        key: 'initPhysics',
-        value: function initPhysics() {
-            this.game.physics.arcade.enable(this);
-            this.enableBody = true;
-
-            this.body.gravity.y = this.game.physics.arcade.gravity.y;
-            this.body.collideWorldBounds = true;
-            this.body.maxVelocity.y = 500;
-            this.body.setSize(15, 29);
-        }
-    }, {
-        key: 'update',
-        value: function update() {
-            this.scale.x = this.direction;
-            this.body.velocity.x = 25 * this.direction;
-        }
-    }, {
-        key: 'calculateRoute',
-        value: function calculateRoute(obstacle) {
-            if (this.direction > 0 && this.x > obstacle.x + obstacle.width || this.direction < 0 && this.x < obstacle.x) {
-                this.direction *= -1;
-            }
-        }
-    }, {
-        key: 'die',
-        value: function die() {
-            this.raptorSound.play();
-            this.body.destroy();
-        }
-    }, {
-        key: 'playDeathSound',
-        value: function playDeathSound() {
-            this.raptorSound.play();
-        }
-    }]);
-
-    return Raptor;
-}(Phaser.Sprite);
-
-exports.default = Raptor;
 ;
 
 },{}],6:[function(require,module,exports){
@@ -539,6 +585,30 @@ var _createClass = function () {
     };
 }();
 
+var _get = function get(object, property, receiver) {
+    if (object === null) object = Function.prototype;var desc = Object.getOwnPropertyDescriptor(object, property);if (desc === undefined) {
+        var parent = Object.getPrototypeOf(object);if (parent === null) {
+            return undefined;
+        } else {
+            return get(parent, property, receiver);
+        }
+    } else if ("value" in desc) {
+        return desc.value;
+    } else {
+        var getter = desc.get;if (getter === undefined) {
+            return undefined;
+        }return getter.call(receiver);
+    }
+};
+
+var _Enemy2 = require('./Enemy');
+
+var _Enemy3 = _interopRequireDefault(_Enemy2);
+
+function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+}
+
 function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
         throw new TypeError("Cannot call a class as a function");
@@ -557,52 +627,171 @@ function _inherits(subClass, superClass) {
     }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
 }
 
-var Soldier = function (_Phaser$Sprite) {
-    _inherits(Soldier, _Phaser$Sprite);
+var Raptor = function (_Enemy) {
+    _inherits(Raptor, _Enemy);
+
+    function Raptor(game, x, y, sprite) {
+        _classCallCheck(this, Raptor);
+
+        var _this = _possibleConstructorReturn(this, (Raptor.__proto__ || Object.getPrototypeOf(Raptor)).call(this, game, x, y, sprite));
+
+        _this.SPEED = 45;
+        return _this;
+    }
+
+    _createClass(Raptor, [{
+        key: 'initAnimation',
+        value: function initAnimation() {
+            this.animations.add('idle', [0], 1, true);
+            this.animations.add('startled', [1], 1, true);
+            this.animations.play('idle');
+        }
+    }, {
+        key: 'initAudio',
+        value: function initAudio() {
+            this.raptorSound = this.game.add.audio('raptorSound');
+        }
+    }, {
+        key: 'initPhysics',
+        value: function initPhysics() {
+            _get(Raptor.prototype.__proto__ || Object.getPrototypeOf(Raptor.prototype), 'initPhysics', this).call(this);
+            this.body.setSize(28, 23, 0, 5);
+        }
+    }, {
+        key: 'update',
+        value: function update() {
+            if (!this.startled) {
+                this.scale.x = this.direction;
+                this.body.velocity.x = this.SPEED * this.direction;
+            }
+        }
+    }, {
+        key: 'calculateRoute',
+        value: function calculateRoute(obstacle) {
+            _get(Raptor.prototype.__proto__ || Object.getPrototypeOf(Raptor.prototype), 'calculateRoute', this).call(this, obstacle);
+        }
+    }, {
+        key: 'die',
+        value: function die() {
+            this.raptorSound.play();
+            this.body.destroy();
+        }
+    }, {
+        key: 'resumePatrol',
+        value: function resumePatrol() {
+            supert.resumePatrol();
+        }
+    }, {
+        key: 'startle',
+        value: function startle() {
+            _get(Raptor.prototype.__proto__ || Object.getPrototypeOf(Raptor.prototype), 'startle', this).call(this);
+        }
+    }, {
+        key: 'playDeathSound',
+        value: function playDeathSound() {
+            this.raptorSound.play();
+        }
+    }]);
+
+    return Raptor;
+}(_Enemy3.default);
+
+exports.default = Raptor;
+;
+
+},{"./Enemy":3}],7:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () {
+    function defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+        }
+    }return function (Constructor, protoProps, staticProps) {
+        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+    };
+}();
+
+var _get = function get(object, property, receiver) {
+    if (object === null) object = Function.prototype;var desc = Object.getOwnPropertyDescriptor(object, property);if (desc === undefined) {
+        var parent = Object.getPrototypeOf(object);if (parent === null) {
+            return undefined;
+        } else {
+            return get(parent, property, receiver);
+        }
+    } else if ("value" in desc) {
+        return desc.value;
+    } else {
+        var getter = desc.get;if (getter === undefined) {
+            return undefined;
+        }return getter.call(receiver);
+    }
+};
+
+var _Enemy2 = require('./Enemy');
+
+var _Enemy3 = _interopRequireDefault(_Enemy2);
+
+function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+}
+
+function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+        throw new TypeError("Cannot call a class as a function");
+    }
+}
+
+function _possibleConstructorReturn(self, call) {
+    if (!self) {
+        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }return call && (typeof call === "object" || typeof call === "function") ? call : self;
+}
+
+function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+        throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+    }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+}
+
+var Soldier = function (_Enemy) {
+    _inherits(Soldier, _Enemy);
 
     function Soldier(game, x, y, sprite) {
         _classCallCheck(this, Soldier);
 
         var _this = _possibleConstructorReturn(this, (Soldier.__proto__ || Object.getPrototypeOf(Soldier)).call(this, game, x, y, sprite));
 
-        _this.alpha = 1;
-        _this.anchor.set(0.5);
-        _this.direction = 1;
-
-        //this.initAnimation();    
-        _this.initPhysics();
         _this.initWeapon();
-        //this.initAudio();
 
-        _this.moving = true;
-
-        game.add.existing(_this);
+        _this.SPEED = 25;
         return _this;
     }
 
     _createClass(Soldier, [{
         key: 'initAnimation',
         value: function initAnimation() {
-            this.animations.add('idle', Phaser.Animation.generateFrameNames('hero_idle', 0, 1, "", 1), 3, true);
-            this.animations.add('run', Phaser.Animation.generateFrameNames('hero_run', 1, 10, "", 1), 12, true);
-            //this.animations.add('jump', 'hero_idle1', 1, true); TODO: review
+            this.animations.add('idle', [0], 3, true);
+            this.animations.add('startled', [1], 12, true);
+            this.animations.add('shooting', [2], true);
             this.animations.play('idle');
         }
     }, {
         key: 'initAudio',
         value: function initAudio() {
+            _get(Soldier.prototype.__proto__ || Object.getPrototypeOf(Soldier.prototype), 'initAudio', this).call(this);
+
             this.jumpSound = this.game.add.audio('jump');
             this.shootSound = this.game.add.audio('shoot');
         }
     }, {
         key: 'initPhysics',
         value: function initPhysics() {
-            this.game.physics.arcade.enable(this);
-            this.enableBody = true;
-
-            this.body.gravity.y = this.game.physics.arcade.gravity.y;
-            this.body.collideWorldBounds = true;
-            this.body.maxVelocity.y = 500;
+            _get(Soldier.prototype.__proto__ || Object.getPrototypeOf(Soldier.prototype), 'initPhysics', this).call(this);
             this.body.setSize(15, 29);
         }
     }, {
@@ -621,8 +810,12 @@ var Soldier = function (_Phaser$Sprite) {
     }, {
         key: 'update',
         value: function update() {
-            this.scale.x = this.direction;
-            this.body.velocity.x = 25 * this.direction;
+            _get(Soldier.prototype.__proto__ || Object.getPrototypeOf(Soldier.prototype), 'update', this).call(this);
+
+            if (!this.startled) {
+                this.scale.x = this.direction;
+                this.body.velocity.x = this.SPEED * this.direction;
+            }
 
             if (this.direction == 1) {
                 this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
@@ -633,9 +826,17 @@ var Soldier = function (_Phaser$Sprite) {
     }, {
         key: 'calculateRoute',
         value: function calculateRoute(obstacle) {
-            if (this.direction > 0 && this.x > obstacle.x + obstacle.width || this.direction < 0 && this.x < obstacle.x) {
-                this.direction *= -1;
-            }
+            _get(Soldier.prototype.__proto__ || Object.getPrototypeOf(Soldier.prototype), 'calculateRoute', this).call(this, obstacle);
+        }
+    }, {
+        key: 'resumePatrol',
+        value: function resumePatrol() {
+            _get(Soldier.prototype.__proto__ || Object.getPrototypeOf(Soldier.prototype), 'resumePatrol', this).call(this);
+        }
+    }, {
+        key: 'startle',
+        value: function startle() {
+            _get(Soldier.prototype.__proto__ || Object.getPrototypeOf(Soldier.prototype), 'startle', this).call(this);
         }
     }, {
         key: 'fire',
@@ -645,12 +846,12 @@ var Soldier = function (_Phaser$Sprite) {
     }]);
 
     return Soldier;
-}(Phaser.Sprite);
+}(_Enemy3.default);
 
 exports.default = Soldier;
 ;
 
-},{}],7:[function(require,module,exports){
+},{"./Enemy":3}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -721,7 +922,7 @@ var Boot = function (_Phaser$State) {
 
 exports.default = Boot;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -863,7 +1064,7 @@ var GameTitle = function (_Phaser$State) {
 
 exports.default = GameTitle;
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -942,11 +1143,11 @@ var Preload = function (_Phaser$State) {
       this.game.load.atlas('hero', 'assets/images/hero_atlas.png', 'assets/images/hero_atlas.json');
 
       //NPCS
-      this.game.load.spritesheet('soldier', 'assets/images/soldier.png', 21, 29, 1);
       this.game.load.spritesheet('selene_portrait', 'assets/images/selene_portrait.png', 20, 20);
 
       //ENEMIES
-      this.game.load.atlas('raptor', 'assets/images/raptor_atlas.png', 'assets/images/raptor_atlas.json');
+      this.game.load.spritesheet('soldier', 'assets/images/soldier.png', 21, 29);
+      this.game.load.spritesheet('raptor', 'assets/images/raptor-sheet.png', 28, 28);
 
       //AUDIO
       this.game.load.audio('theme', ['assets/audio/theme.wav'], true);
@@ -960,8 +1161,6 @@ var Preload = function (_Phaser$State) {
   }, {
     key: 'create',
     value: function create() {
-      this.stage.backgroundColor = "#FFF";
-
       this.state.start('Stage1', true, false);
     }
   }]);
@@ -971,7 +1170,7 @@ var Preload = function (_Phaser$State) {
 
 exports.default = Preload;
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1049,7 +1248,7 @@ var Stage1 = function (_Phaser$State) {
 			this.adjustStageWorld(this.STAGE_LENGTH);
 
 			this.camera.flash("#000000");
-			this.game.inputEnabled = false;
+			this.game.inputEnabled = true; //TODO revert to false;
 
 			//Enble Arcade Physics
 			this.physics.startSystem(Phaser.Physics.ARCADE);
@@ -1076,8 +1275,22 @@ var Stage1 = function (_Phaser$State) {
 
 			this.themeMusic = this.game.add.audio('theme', 1, true);
 			this.themeMusic.play();
-		}
 
+			this.createLinesOfSight(this.soldiers);
+			this.createLinesOfSight(this.raptors);
+		}
+	}, {
+		key: 'createLinesOfSight',
+		value: function createLinesOfSight(group) {
+			this.linesOfSight = this.linesOfSight || [];
+			for (var i = 0; i < group.length; i++) {
+				var line = new Phaser.Line(group.children[i].x, group.children[i].y, this.hero.x, this.hero.y);
+				line.origin = group.children[i];
+				line.target = this.hero;
+
+				this.linesOfSight.push(line);
+			}
+		}
 		/**
    * The method to add a DialogBox object in the top of the screen.
    * While the dialog is showing text, all input from the player is disabled.
@@ -1134,23 +1347,17 @@ var Stage1 = function (_Phaser$State) {
 			this.carArrives.start();
 
 			this.soldiers = this.add.group();
-			this.soldier = new _Soldier2.default(this.game, 130, 20, 'soldier');
-			this.soldiers.add(this.soldier);
+			this.soldiers.addMultiple([new _Soldier2.default(this.game, 130, this.getObjectPositionAboveGround('soldier') - this.game.cache.getImage('container01').height, 'soldier'), new _Soldier2.default(this.game, 230, this.getObjectPositionAboveGround('soldier'), 'soldier')]);
 
 			this.raptors = this.add.group();
-			this.raptor = this.game.add.sprite(190, 45, 'raptor');
-			this.raptors.add(this.raptor);
+			this.raptors.addMultiple([new _Raptor2.default(this.game, 190, 45, 'raptor')]);
 		}
 	}, {
 		key: 'createObjects',
 		value: function createObjects() {
 			this.objects = this.add.group();
 
-			this.container01 = new _Obstacle2.default(this.game, 110, this.getObjectPositionAboveGround('container01'), 'container01');
-			this.container02 = new _Obstacle2.default(this.game, 280, this.getObjectPositionAboveGround('container01'), 'container01');
-			this.cardboardbox = new _Obstacle2.default(this.game, 80, this.getObjectPositionAboveGround('cardboardbox'), 'cardboardbox');
-
-			this.objects.addMultiple([this.container01, this.container01, this.cardboardbox]);
+			this.objects.addMultiple([new _Obstacle2.default(this.game, 110, this.getObjectPositionAboveGround('container01'), 'container01'), new _Obstacle2.default(this.game, 280, this.getObjectPositionAboveGround('container01'), 'container01'), new _Obstacle2.default(this.game, 80, this.getObjectPositionAboveGround('cardboardbox'), 'cardboardbox')]);
 
 			this.eventLab = this.add.sprite(-100, 2);
 			this.eventLab.scale.y = this.game.height;
@@ -1176,7 +1383,6 @@ var Stage1 = function (_Phaser$State) {
 		value: function addPhysicsToElements(gravity) {
 			this.physics.arcade.enable(this.ground);
 			this.physics.arcade.enable(this.labComputer);
-			this.physics.arcade.enable(this.raptor);
 
 			this.physics.arcade.enable(this.eventLab);
 
@@ -1190,10 +1396,6 @@ var Stage1 = function (_Phaser$State) {
 
 			this.ground.body.immovable = true;
 			this.ground.body.allowGravity = false;
-
-			this.raptor.body.allowGravity = true;
-			this.raptor.enableBody = true;
-			this.raptor.body.collideWorldBounds = true;
 		}
 	}, {
 		key: 'adjustCamera',
@@ -1210,6 +1412,42 @@ var Stage1 = function (_Phaser$State) {
 	}, {
 		key: 'update',
 		value: function update() {
+			this.linesOfSight.forEach(function (l) {
+				l.fromSprite(l.origin, l.target);
+			});
+
+			for (var l = 0; l < this.linesOfSight.length; l++) {
+				var line = this.linesOfSight[l];
+
+				var intersectsWithLevel = false;
+				var degrees = line.angle * 180 / Math.PI;
+
+				for (var i = 0; i < this.objects.length; i++) {
+					if (Phaser.Line.intersectsRectangle(line, this.objects.children[i].body)) {
+						intersectsWithLevel = true;
+						break;
+					}
+				}
+				if (intersectsWithLevel) continue;else {
+					if (line.origin.startled) continue;
+
+					var detection = false;
+
+					if (line.origin.direction == 1 && line.target.x > line.origin.x && (degrees >= 340 && degrees <= 360 || degrees >= 0 && degrees <= 20)) {
+						detection = true;
+					}
+					if (line.origin.direction == -1 && line.target.x < line.origin.x && degrees >= 160 && degrees <= 240) {
+						detection = true;
+					}
+					if (line.length > 50) detection = false;
+
+					if (detection) {
+						line.origin.startle();
+					}
+					line.detection = detection;
+				}
+			}
+
 			this.updateBackground();
 
 			if (this.eventLab != null && this.checkOverlap(this.hero, this.eventLab)) {
@@ -1224,7 +1462,7 @@ var Stage1 = function (_Phaser$State) {
 			//Collision events
 			this.physics.arcade.collide(this.hero, this.ground);
 			this.physics.arcade.collide(this.hero, this.objects);
-			this.physics.arcade.collide(this.hero, this.raptors, this.restartStage, null, this);
+			//this.physics.arcade.collide(this.hero, this.raptors, this.restartStage, null, this);
 
 			this.physics.arcade.collide(this.objects, this.raptors, this.enemyHitWall);
 			this.physics.arcade.collide(this.objects, this.soldiers, this.enemyHitWall);
@@ -1233,23 +1471,7 @@ var Stage1 = function (_Phaser$State) {
 			this.physics.arcade.collide(this.soldiers, this.ground);
 
 			for (var i = 0; i < this.soldiers.length; i++) {
-				var soldier = this.soldiers.children[i];
-
-				if (Math.round(soldier.y) == Math.round(this.hero.y)) {
-					console.log("Seen! Begin chase.");
-
-					if (soldier.x > this.hero.x && soldier.direction == -1) {
-						soldier.body.velocity.x = -80;
-						soldier.body.velocity.y = -100;
-
-						soldier.fire();
-					} else if (soldier.x < this.hero.x && soldier.direction == 1) {
-						soldier.body.velocity.x = 80;
-						soldier.body.velocity.y = -100;
-
-						soldier.fire();
-					}
-				}
+				this.physics.arcade.overlap(this.soldiers.children[i].weapon.bullets, this.hero, this.bulletHitEnemy, null, this);
 			}
 
 			this.updateEnemies();
@@ -1268,13 +1490,23 @@ var Stage1 = function (_Phaser$State) {
 	}, {
 		key: 'updateEnemies',
 		value: function updateEnemies() {
-			if (this.raptor.body != null) if (Math.random() > 0.5) {
-				if (this.raptor.scale.x > 0) {
-					this.raptor.body.velocity.x = 30;
-				} else {
-					this.raptor.body.velocity.x = -30;
-				}
-			}
+			/*TODO review : for	(var i = 0; i < this.soldiers.length; i ++){
+   	var soldier = this.soldiers.children[i];
+   		if (Math.round(soldier.height + soldier.body.position.y) == Math.round(this.hero.body.position.y + this.hero.height)){
+   		
+   		if (soldier.x > this.hero.x && soldier.direction == -1){
+   			soldier.body.velocity.x = -80;
+   			soldier.body.velocity.y = -100;
+   			
+   			soldier.fire();
+   		}else if (soldier.x < this.hero.x && soldier.direction == 1){
+   			soldier.body.velocity.x = 80;
+   			soldier.body.velocity.y = -100;
+   			
+   			soldier.fire();
+   		}
+   	}
+   }*/
 		}
 	}, {
 		key: 'enemyHitWall',
@@ -1285,12 +1517,14 @@ var Stage1 = function (_Phaser$State) {
 		}
 	}, {
 		key: 'bulletHitEnemy',
-		value: function bulletHitEnemy(bullet, object) {
+		value: function bulletHitEnemy(target, bullet) {
 			bullet.destroy();
-			object.destroy();
 
-			if (object instanceof _Raptor2.default) {
-				object.die();
+			if (target instanceof _Raptor2.default) {
+				target.die();
+			}
+			if (target instanceof _Player2.default) {
+				target.hit();
 			}
 		}
 	}, {
@@ -1340,14 +1574,25 @@ var Stage1 = function (_Phaser$State) {
 				}
 			}
 
-			this.game.debug.body(this.eventLab);
-			//this.game.debug.body(this.hero);
+			if (document.querySelector('#debugInfo').checked) {
+				this.game.debug.body(this.eventLab);
+				this.game.debug.body(this.hero);
 
-			for (var i = 0; i < this.soldiers.length; i++) {
-				//this.game.debug.body(this.soldiers.children[i]);
-			}
-			for (var i = 0; i < this.raptors.length; i++) {
-				this.game.debug.body(this.raptors.children[i]);
+				for (var i = 0; i < this.soldiers.length; i++) {
+					this.game.debug.body(this.soldiers.children[i]);
+				}
+				for (var i = 0; i < this.raptors.length; i++) {
+					this.game.debug.body(this.raptors.children[i]);
+				}
+
+				for (var l = 0; l < this.linesOfSight.length; l++) {
+					var line = this.linesOfSight[l];
+					if (line.detection) {
+						this.game.debug.geom(line, "#0FF");
+					} else {
+						this.game.debug.geom(line, "#F00");
+					}
+				}
 			}
 		}
 	}, {
@@ -1388,5 +1633,5 @@ var Stage1 = function (_Phaser$State) {
 
 exports.default = Stage1;
 
-},{"../objects/DialogBox":2,"../objects/Obstacle":3,"../objects/Player":4,"../objects/Raptor":5,"../objects/Soldier":6}]},{},[1])
+},{"../objects/DialogBox":2,"../objects/Obstacle":4,"../objects/Player":5,"../objects/Raptor":6,"../objects/Soldier":7}]},{},[1])
 //# sourceMappingURL=game.js.map

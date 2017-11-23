@@ -1,10 +1,12 @@
 export default class Player extends Phaser.Sprite{
     constructor(game, x, y, sprite){
-        
         super(game, x, y, sprite);  
 
+        this.SPEED = 45;        
+        
         this.alpha = 1;
-		this.anchor.set(0.5);
+        this.anchor.set(0.5);
+        this.direction = 1;
     
         this.initAnimation();    
         this.initPhysics();
@@ -66,33 +68,27 @@ export default class Player extends Phaser.Sprite{
 		if (this.game.inputEnabled){
 			if (this.cursors.left.isDown)
 			{
-				this.body.velocity.x = -45;
+                this.direction = -1;
+                this.scale.x = this.direction;                
+				this.body.velocity.x = this.SPEED * this.direction;
                 this.animations.play('run');
                 
-                if (this.scale.x == 1){
-					this.scale.x =-1;
-				}
-
 				this.weapon.fireAngle = Phaser.ANGLE_LEFT;
 			}
 			else if (this.cursors.right.isDown)
 			{
-				this.body.velocity.x = 45;
-                this.animations.play('run');
-                
-				if (this.scale.x == -1){
-					this.scale.x = 1;
-				}
+                this.direction = 1;
+                this.scale.x = this.direction;                
+				this.body.velocity.x = this.SPEED * this.direction;
+                this.animations.play('run');                
 
 				this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
             }else if (this.cursors.down.isDown){
-                this.body.velocity.x = 0;
-                this.animations.play('crouch');
+                this.crouch();
             }
             else {
-                this.body.velocity.x = 0;
-                this.animations.play('idle');
-            }
+                this.stop();
+            } 
 
 			if (this.jumpButton.isDown && this.body.touching.down){
 				this.jump();
@@ -105,6 +101,11 @@ export default class Player extends Phaser.Sprite{
 		}
     }
 
+    crouch(){
+        this.body.velocity.x = 0;
+        this.animations.play('crouch');
+    }
+
     jump(){
         this.body.velocity.y = -210;
         this.jumpSound.play();
@@ -113,5 +114,9 @@ export default class Player extends Phaser.Sprite{
     stop(){
         this.body.velocity.x = 0;
         this.animations.play('idle');
+    }
+
+    hit (){
+        console.log("Player hit!");
     }
 };

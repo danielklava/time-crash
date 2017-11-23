@@ -1,75 +1,73 @@
-export default class Soldier extends Phaser.Sprite{
-    constructor(game, x, y, sprite){
-        
-        super(game, x, y, sprite);  
+import Enemy from "./Enemy";
 
-        this.alpha = 1;
-        this.anchor.set(0.5);
-        this.direction = 1;
+export default class Soldier extends Enemy {
+    constructor(game, x, y, sprite) {
+        super(game, x, y, sprite);
 
-        //this.initAnimation();    
-        this.initPhysics();
         this.initWeapon();
-        //this.initAudio();
 
-        this.moving = true;
-
-        game.add.existing(this);
+        this.SPEED = 25;
     }
 
-    initAnimation(){
-        this.animations.add('idle', Phaser.Animation.generateFrameNames('hero_idle', 0, 1,"",1), 3, true);
-		this.animations.add('run', Phaser.Animation.generateFrameNames('hero_run', 1, 10,"",1), 12, true);
-	    //this.animations.add('jump', 'hero_idle1', 1, true); TODO: review
+    initAnimation() {
+        this.animations.add('idle', [0], 3, true);
+        this.animations.add('startled', [1], 12, true);
+        this.animations.add('shooting', [2], true);
         this.animations.play('idle');
     }
 
-    initAudio(){
+    initAudio() {
+        super.initAudio();
+
         this.jumpSound = this.game.add.audio('jump');
-		this.shootSound = this.game.add.audio('shoot');
+        this.shootSound = this.game.add.audio('shoot');
     }
 
     initPhysics() {
-        this.game.physics.arcade.enable(this);
-        this.enableBody = true;
-
-		this.body.gravity.y = this.game.physics.arcade.gravity.y;
-		this.body.collideWorldBounds = true;
-		this.body.maxVelocity.y = 500;
-		this.body.setSize(15,29);
+        super.initPhysics();
+        this.body.setSize(15, 29);
     }
 
-    initWeapon(){
+    initWeapon() {
         this.weapon = this.game.add.weapon(5, 'bullet');
-		this.weapon.bulletSpeed = 100;
-		this.weapon.fireRate = 500;
-		this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
-		this.weapon.bulletKillDistance = 45;
-		this.weapon.bulletKillType = Phaser.Weapon.KILL_DISTANCE;
+        this.weapon.bulletSpeed = 100;
+        this.weapon.fireRate = 500;
+        this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
+        this.weapon.bulletKillDistance = 45;
+        this.weapon.bulletKillType = Phaser.Weapon.KILL_DISTANCE;
         this.weapon.bulletGravity.y = -350;
-		this.weapon.trackSprite(this, 5, -2, true);
+        this.weapon.trackSprite(this, 5, -2, true);
         this.weapon.trackRotation = false;
     }
-    
-    update(){
-        this.scale.x = this.direction;
-        this.body.velocity.x = 25 * this.direction;
 
-        if (this.direction == 1){
+    update() {
+        super.update();
+
+        if (!this.startled){
+            this.scale.x = this.direction;
+            this.body.velocity.x = this.SPEED * this.direction;
+        }
+            
+        if (this.direction == 1) {
             this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
-        } else {        
+        } else {
             this.weapon.fireAngle = Phaser.ANGLE_LEFT;
         }
     }
 
     calculateRoute(obstacle) {
-        if(this.direction > 0 && this.x > obstacle.x + obstacle.width 
-            || this.direction < 0 && this.x < obstacle.x){
-            this.direction *= -1;
-        }	
+        super.calculateRoute(obstacle);
     }
 
-    fire(){
+    resumePatrol(){
+        super.resumePatrol();
+    }
+
+    startle() {
+        super.startle();
+    }
+
+    fire() {
         this.weapon.fire();
     }
 };
