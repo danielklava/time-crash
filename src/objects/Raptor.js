@@ -6,6 +6,8 @@ export default class Raptor extends Enemy{
         super(game, x, y, sprite);  
 
         this.SPEED = 45;
+        this.attacking=false;
+        this.startled=false;
     }
 
     initAnimation(){
@@ -24,30 +26,44 @@ export default class Raptor extends Enemy{
     }
     
     update(){
+        if (this.body.touching.down && this.attacking) {
+            this.attacking = false;
+            this.resumePatrol();
+        } 
         if (!this.startled){
+            this.attacking = false;
             this.scale.x = this.direction;
             this.body.velocity.x = this.SPEED * this.direction;
         }
     }
-
+    
     calculateRoute(obstacle) {
         super.calculateRoute(obstacle);
     }
 
     die(){
         this.raptorSound.play();
-        this.body.destroy();
+        this.kill();
     }
 
     resumePatrol(){
-        supert.resumePatrol();
+        super.resumePatrol();
     }
 
     startle() {
-        super.startle();
+        if (!this.attacking)
+            super.startle();
     }
 
     playDeathSound() {
         this.raptorSound.play();
+    }
+
+    attack(){
+        if (!this.attacking){
+            this.body.velocity.y = -220;
+            this.body.velocity.x = 200 * this.direction;
+            this.attacking = true;
+        }
     }
 };

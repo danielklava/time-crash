@@ -6,7 +6,7 @@ import Stage1 from 'states/Stage1';
 class Game extends Phaser.Game {
 
 	constructor() {
-		super(288, 81, Phaser.CANVAS, 'gameArea', null);
+		super(230, 81, Phaser.CANVAS, 'gameArea', null);
 		
 		this.antialias = false;
 
@@ -28,5 +28,5 @@ class Game extends Phaser.Game {
 
 }
 
-var game = new Game();
+window.game = new Game();
 

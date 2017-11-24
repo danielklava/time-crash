@@ -83,6 +83,7 @@ function copyPhaser() {
     srcList = srcList.map(function(file) {
         return PHASER_PATH + file;
     });
+    srcList.push('./node_modules/phaser-debug-timer/index.js');
         
     return gulp.src(srcList)
         .pipe(gulp.dest(SCRIPTS_PATH));

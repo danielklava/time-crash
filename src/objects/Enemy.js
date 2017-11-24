@@ -11,6 +11,8 @@ export default class Enemy extends Phaser.Sprite {
         this.initPhysics();
         this.initAudio();
 
+        this.alertTimer = this.game.time.create(false);
+
         this.moving = true;
 
         game.add.existing(this);
@@ -69,22 +71,27 @@ export default class Enemy extends Phaser.Sprite {
         this.alpha = 0;
     }
 
+    startle() {
+        if (!this.startled){
+            this.startled = true;
+
+            this.animations.play('startled');
+            this.body.velocity.x = 0;
+            
+            this.alertTimer.stop(true);
+            this.waitingTimer = this.alertTimer.add(Phaser.Timer.SECOND * 0.5, this.attack, this);
+            this.alertTimer.start();
+        }
+    }
+
+    attack(){
+
+    }
+    
     resumePatrol(){
+        console.log("Resuming patrol...");
+        this.alertTimer.stop();
         this.startled = false;
         this.animations.play('idle');
     }
-
-    startle() {
-        this.animations.play('startled');
-        this.body.velocity.x = 0;
-        console.log(this.startled);
-        if (this.startled != true){
-            console.log("Startled! Waiting for 1 second.");
-            this.startled = true;
-            this.game.time.events.add(Phaser.Timer.SECOND * 1, function(){
-                console.log("Resuming patrol");
-                this.resumePatrol();
-            }, this);
-        }
-    }
-};
+}

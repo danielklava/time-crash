@@ -61,7 +61,7 @@ export default class Player extends Phaser.Sprite{
     
     update(){
         /* TODO: Review jump animation
-        if (this.body.velocity.y != 0){
+        if (this.body.velocity.y != 0){ 
 			//this.animations.play('jump');
         }*/
 
@@ -118,5 +118,9 @@ export default class Player extends Phaser.Sprite{
 
     hit (){
         console.log("Player hit!");
+    }
+
+    die(){
+        this.kill();
     }
 };

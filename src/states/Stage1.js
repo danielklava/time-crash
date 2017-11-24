@@ -44,6 +44,24 @@ class Stage1 extends Phaser.State {
 
 		this.createLinesOfSight(this.soldiers);
 		this.createLinesOfSight(this.raptors);		
+
+		var gui = new dat.GUI();
+		for (var i = 0; i < this.soldiers.length; i ++){
+			gui.addFolder("Soldier " + i);
+			gui.add(this.soldiers.children[i], "x").listen();
+			gui.add(this.soldiers.children[i], "y").listen();
+			gui.add(this.soldiers.children[i], "startle");
+			gui.add(this.soldiers.children[i], "resumePatrol");
+		}
+		for (var i = 0; i < this.raptors.length; i ++){
+			gui.addFolder("Raptor " + i);
+			gui.add(this.raptors.children[i], "x").listen();
+			gui.add(this.raptors.children[i], "y").listen();
+			gui.add(this.raptors.children[i], "startle");
+			gui.add(this.raptors.children[i], "resumePatrol");
+			gui.add(this.raptors.children[i], "attacking").listen();
+			gui.add(this.raptors.children[i], "startled").listen();
+		}
 	}
 
 	createLinesOfSight(group){
@@ -102,8 +120,8 @@ class Stage1 extends Phaser.State {
 
 		this.soldiers = this.add.group();
 		this.soldiers.addMultiple([
-			new Soldier(this.game, 130, this.getObjectPositionAboveGround('soldier') - this.game.cache.getImage('container01').height, 'soldier'),
-			new Soldier(this.game, 230, this.getObjectPositionAboveGround('soldier'), 'soldier')
+			new Soldier(this.game, 130, this.getObjectPositionAboveGround('soldier') - this.game.cache.getImage('container01').height, 'soldier')
+			, new Soldier(this.game, 230, this.getObjectPositionAboveGround('soldier'), 'soldier')
 		]);
 
 		this.raptors = this.add.group();
@@ -168,9 +186,9 @@ class Stage1 extends Phaser.State {
 
 		for(var l = 0; l < this.linesOfSight.length; l++){
 			var line = this.linesOfSight[l];
+			if (line.origin.startled) continue;
 			
 			var intersectsWithLevel = false;
-			var degrees = line.angle * 180/ Math.PI;
 
 			for(var i = 0; i < this.objects.length; i ++){  
 				if (Phaser.Line.intersectsRectangle(line, this.objects.children[i].body)){
@@ -183,6 +201,7 @@ class Stage1 extends Phaser.State {
 				if (line.origin.startled) continue;
 
 				var detection = false;
+				var degrees = line.angle * 180/ Math.PI;
 
 				if (line.origin.direction == 1 && line.target.x > line.origin.x
 					&& ( degrees >= 340 && degrees <= 360 || degrees >= 0 && degrees <= 20)){
@@ -192,7 +211,7 @@ class Stage1 extends Phaser.State {
 					&& degrees >= 160 && degrees <= 240){
 					detection = true;
 				}
-				if (line.length > 50) detection = false;
+				if (line.length > 100) detection = false;
 		
 				if (detection){
 					line.origin.startle();
@@ -243,24 +262,7 @@ class Stage1 extends Phaser.State {
 		this.game.state.restart();
 	}
 	updateEnemies (){
-		/*TODO review : for	(var i = 0; i < this.soldiers.length; i ++){
-			var soldier = this.soldiers.children[i];
 
-			if (Math.round(soldier.height + soldier.body.position.y) == Math.round(this.hero.body.position.y + this.hero.height)){
-				
-				if (soldier.x > this.hero.x && soldier.direction == -1){
-					soldier.body.velocity.x = -80;
-					soldier.body.velocity.y = -100;
-					
-					soldier.fire();
-				}else if (soldier.x < this.hero.x && soldier.direction == 1){
-					soldier.body.velocity.x = 80;
-					soldier.body.velocity.y = -100;
-					
-					soldier.fire();
-				}
-			}
-		}*/
 	}
 	enemyHitWall  (object, enemy){
 		if (enemy instanceof Soldier || enemy instanceof Raptor){
@@ -338,7 +340,7 @@ class Stage1 extends Phaser.State {
 				}else{
 					this.game.debug.geom(line, "#F00");
 				}
-			}		
+			}
 		}
 	}
 

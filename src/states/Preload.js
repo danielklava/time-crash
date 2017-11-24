@@ -24,9 +24,6 @@ class Preload extends Phaser.State {
       { id: 'menu-start',   file: 'assets/images/menu-start.png'},
       { id: 'ground',       file: 'assets/images/ground.png' },
       
-      //BULLET
-      { id : 'bullet',      file : 'assets/images/bullet.png'},
-
       //LAB  
       { id: 'bg-lab',       file: 'assets/images/bg_lab.png' },
       { id: 'lab-walls',    file: 'assets/images/lab_walls.png' },
@@ -38,6 +35,8 @@ class Preload extends Phaser.State {
     for (var i = 0; i < imagesToLoad.length; i++) {
       this.game.load.image(imagesToLoad[i].id, imagesToLoad[i].file);
     }
+
+    this.game.load.spritesheet('bullet', 'assets/images/bullet-sheet.png', 7, 3);
 
     //CAR
     this.game.load.image('car-idle', 'assets/images/car-idle.png');
@@ -51,7 +50,7 @@ class Preload extends Phaser.State {
 
     //ENEMIES
     this.game.load.spritesheet('soldier', 'assets/images/soldier.png', 21, 29);
-    this.game.load.spritesheet('raptor', 'assets/images/raptor-sheet.png', 28, 28);
+    this.game.load.spritesheet('raptor', 'assets/images/raptor-sheet.png', 30, 29);
     
     //AUDIO
     this.game.load.audio('theme', ['assets/audio/theme.wav'], true);

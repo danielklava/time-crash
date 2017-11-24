@@ -29,11 +29,15 @@ export default class Soldier extends Enemy {
     }
 
     initWeapon() {
-        this.weapon = this.game.add.weapon(5, 'bullet');
+        this.weapon = this.game.add.weapon(-1, 'bullet');
         this.weapon.bulletSpeed = 100;
+        this.weapon.setBulletFrames(0, 2,true);
+        this.weapon.bullets.callAll('animations.add', 'animations', 'fire', [0,1], 5, true);
+        this.weapon.bullets.callAll('play', null, 'fire');
+
         this.weapon.fireRate = 500;
         this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
-        this.weapon.bulletKillDistance = 45;
+        this.weapon.bulletKillDistance = 100;
         this.weapon.bulletKillType = Phaser.Weapon.KILL_DISTANCE;
         this.weapon.bulletGravity.y = -350;
         this.weapon.trackSprite(this, 5, -2, true);
@@ -67,7 +71,9 @@ export default class Soldier extends Enemy {
         super.startle();
     }
 
-    fire() {
+    attack() {
         this.weapon.fire();
+
+        this.resumePatrol();
     }
 };
