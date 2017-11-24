@@ -40,7 +40,7 @@ export default class Enemy extends Phaser.Sprite {
     }
 
     update() {
-        if (!this.startled){
+        if (!this.alerted){
             this.scale.x = this.direction;
             this.body.velocity.x = 25 * this.direction;
         }
@@ -53,7 +53,7 @@ export default class Enemy extends Phaser.Sprite {
     }
 
     calculateRoute(obstacle) {
-        if (!this.startled) {
+        if (!this.alerted) {
             if (this.direction > 0 && this.x > obstacle.x + obstacle.width
                 || this.direction < 0 && this.x < obstacle.x) {
                 this.direction *= -1;
@@ -71,11 +71,11 @@ export default class Enemy extends Phaser.Sprite {
         this.alpha = 0;
     }
 
-    startle() {
-        if (!this.startled){
-            this.startled = true;
+    alert() {
+        if (!this.alerted){
+            this.alerted = true;
 
-            this.animations.play('startled');
+            this.animations.play('alerted');
             this.body.velocity.x = 0;
             
             this.alertTimer.stop(true);
@@ -91,7 +91,7 @@ export default class Enemy extends Phaser.Sprite {
     resumePatrol(){
         console.log("Resuming patrol...");
         this.alertTimer.stop();
-        this.startled = false;
+        this.alerted = false;
         this.animations.play('idle');
     }
 }

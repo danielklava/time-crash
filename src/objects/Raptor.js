@@ -7,12 +7,12 @@ export default class Raptor extends Enemy{
 
         this.SPEED = 45;
         this.attacking=false;
-        this.startled=false;
+        this.alerted=false;
     }
 
     initAnimation(){
         this.animations.add('idle', [0], 1, true);
-        this.animations.add('startled', [1], 1, true);
+        this.animations.add('alerted', [1], 1, true);
         this.animations.play('idle');
     }   
 
@@ -30,7 +30,7 @@ export default class Raptor extends Enemy{
             this.attacking = false;
             this.resumePatrol();
         } 
-        if (!this.startled){
+        if (!this.alerted){
             this.attacking = false;
             this.scale.x = this.direction;
             this.body.velocity.x = this.SPEED * this.direction;
@@ -50,9 +50,9 @@ export default class Raptor extends Enemy{
         super.resumePatrol();
     }
 
-    startle() {
+    alert() {
         if (!this.attacking)
-            super.startle();
+            super.alert();
     }
 
     playDeathSound() {

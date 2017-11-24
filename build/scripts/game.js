@@ -270,7 +270,7 @@ var Enemy = function (_Phaser$Sprite) {
     }, {
         key: 'update',
         value: function update() {
-            if (!this.startled) {
+            if (!this.alerted) {
                 this.scale.x = this.direction;
                 this.body.velocity.x = 25 * this.direction;
             }
@@ -284,7 +284,7 @@ var Enemy = function (_Phaser$Sprite) {
     }, {
         key: 'calculateRoute',
         value: function calculateRoute(obstacle) {
-            if (!this.startled) {
+            if (!this.alerted) {
                 if (this.direction > 0 && this.x > obstacle.x + obstacle.width || this.direction < 0 && this.x < obstacle.x) {
                     this.direction *= -1;
                 }
@@ -302,12 +302,12 @@ var Enemy = function (_Phaser$Sprite) {
             this.alpha = 0;
         }
     }, {
-        key: 'startle',
-        value: function startle() {
-            if (!this.startled) {
-                this.startled = true;
+        key: 'alert',
+        value: function alert() {
+            if (!this.alerted) {
+                this.alerted = true;
 
-                this.animations.play('startled');
+                this.animations.play('alerted');
                 this.body.velocity.x = 0;
 
                 this.alertTimer.stop(true);
@@ -323,7 +323,7 @@ var Enemy = function (_Phaser$Sprite) {
         value: function resumePatrol() {
             console.log("Resuming patrol...");
             this.alertTimer.stop();
-            this.startled = false;
+            this.alerted = false;
             this.animations.play('idle');
         }
     }]);
@@ -647,7 +647,7 @@ var Raptor = function (_Enemy) {
 
         _this.SPEED = 45;
         _this.attacking = false;
-        _this.startled = false;
+        _this.alerted = false;
         return _this;
     }
 
@@ -655,7 +655,7 @@ var Raptor = function (_Enemy) {
         key: 'initAnimation',
         value: function initAnimation() {
             this.animations.add('idle', [0], 1, true);
-            this.animations.add('startled', [1], 1, true);
+            this.animations.add('alerted', [1], 1, true);
             this.animations.play('idle');
         }
     }, {
@@ -676,7 +676,7 @@ var Raptor = function (_Enemy) {
                 this.attacking = false;
                 this.resumePatrol();
             }
-            if (!this.startled) {
+            if (!this.alerted) {
                 this.attacking = false;
                 this.scale.x = this.direction;
                 this.body.velocity.x = this.SPEED * this.direction;
@@ -699,9 +699,9 @@ var Raptor = function (_Enemy) {
             _get(Raptor.prototype.__proto__ || Object.getPrototypeOf(Raptor.prototype), 'resumePatrol', this).call(this);
         }
     }, {
-        key: 'startle',
-        value: function startle() {
-            if (!this.attacking) _get(Raptor.prototype.__proto__ || Object.getPrototypeOf(Raptor.prototype), 'startle', this).call(this);
+        key: 'alert',
+        value: function alert() {
+            if (!this.attacking) _get(Raptor.prototype.__proto__ || Object.getPrototypeOf(Raptor.prototype), 'alert', this).call(this);
         }
     }, {
         key: 'playDeathSound',
@@ -802,7 +802,7 @@ var Soldier = function (_Enemy) {
         key: 'initAnimation',
         value: function initAnimation() {
             this.animations.add('idle', [0], 3, true);
-            this.animations.add('startled', [1], 12, true);
+            this.animations.add('alerted', [1], 12, true);
             this.animations.add('shooting', [2], true);
             this.animations.play('idle');
         }
@@ -842,7 +842,7 @@ var Soldier = function (_Enemy) {
         value: function update() {
             _get(Soldier.prototype.__proto__ || Object.getPrototypeOf(Soldier.prototype), 'update', this).call(this);
 
-            if (!this.startled) {
+            if (!this.alerted) {
                 this.scale.x = this.direction;
                 this.body.velocity.x = this.SPEED * this.direction;
             }
@@ -864,9 +864,9 @@ var Soldier = function (_Enemy) {
             _get(Soldier.prototype.__proto__ || Object.getPrototypeOf(Soldier.prototype), 'resumePatrol', this).call(this);
         }
     }, {
-        key: 'startle',
-        value: function startle() {
-            _get(Soldier.prototype.__proto__ || Object.getPrototypeOf(Soldier.prototype), 'startle', this).call(this);
+        key: 'alert',
+        value: function alert() {
+            _get(Soldier.prototype.__proto__ || Object.getPrototypeOf(Soldier.prototype), 'alert', this).call(this);
         }
     }, {
         key: 'attack',
@@ -1164,7 +1164,7 @@ var Preload = function (_Phaser$State) {
         this.game.load.image(imagesToLoad[i].id, imagesToLoad[i].file);
       }
 
-      this.game.load.spritesheet('bullet', 'assets/images/bullet-sheet.png', 7, 3);
+      this.game.load.image('bullet', 'assets/images/bullet.png');
 
       //CAR
       this.game.load.image('car-idle', 'assets/images/car-idle.png');
@@ -1315,17 +1315,17 @@ var Stage1 = function (_Phaser$State) {
 				gui.addFolder("Soldier " + i);
 				gui.add(this.soldiers.children[i], "x").listen();
 				gui.add(this.soldiers.children[i], "y").listen();
-				gui.add(this.soldiers.children[i], "startle");
+				gui.add(this.soldiers.children[i], "alert");
 				gui.add(this.soldiers.children[i], "resumePatrol");
 			}
 			for (var i = 0; i < this.raptors.length; i++) {
 				gui.addFolder("Raptor " + i);
 				gui.add(this.raptors.children[i], "x").listen();
 				gui.add(this.raptors.children[i], "y").listen();
-				gui.add(this.raptors.children[i], "startle");
+				gui.add(this.raptors.children[i], "alert");
 				gui.add(this.raptors.children[i], "resumePatrol");
 				gui.add(this.raptors.children[i], "attacking").listen();
-				gui.add(this.raptors.children[i], "startled").listen();
+				gui.add(this.raptors.children[i], "alerted").listen();
 			}
 		}
 	}, {
@@ -1467,7 +1467,7 @@ var Stage1 = function (_Phaser$State) {
 
 			for (var l = 0; l < this.linesOfSight.length; l++) {
 				var line = this.linesOfSight[l];
-				if (line.origin.startled) continue;
+				if (line.origin.alerted) continue;
 
 				var intersectsWithLevel = false;
 
@@ -1478,7 +1478,7 @@ var Stage1 = function (_Phaser$State) {
 					}
 				}
 				if (intersectsWithLevel) continue;else {
-					if (line.origin.startled) continue;
+					if (line.origin.alerted) continue;
 
 					var detection = false;
 					var degrees = line.angle * 180 / Math.PI;
@@ -1492,7 +1492,7 @@ var Stage1 = function (_Phaser$State) {
 					if (line.length > 100) detection = false;
 
 					if (detection) {
-						line.origin.startle();
+						line.origin.alert();
 					}
 					line.detection = detection;
 				}

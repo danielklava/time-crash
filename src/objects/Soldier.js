@@ -11,7 +11,7 @@ export default class Soldier extends Enemy {
 
     initAnimation() {
         this.animations.add('idle', [0], 3, true);
-        this.animations.add('startled', [1], 12, true);
+        this.animations.add('alerted', [1], 12, true);
         this.animations.add('shooting', [2], true);
         this.animations.play('idle');
     }
@@ -47,7 +47,7 @@ export default class Soldier extends Enemy {
     update() {
         super.update();
 
-        if (!this.startled){
+        if (!this.alerted){
             this.scale.x = this.direction;
             this.body.velocity.x = this.SPEED * this.direction;
         }
@@ -67,8 +67,8 @@ export default class Soldier extends Enemy {
         super.resumePatrol();
     }
 
-    startle() {
-        super.startle();
+    alert() {
+        super.alert();
     }
 
     attack() {

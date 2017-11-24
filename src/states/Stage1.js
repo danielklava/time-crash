@@ -50,17 +50,17 @@ class Stage1 extends Phaser.State {
 			gui.addFolder("Soldier " + i);
 			gui.add(this.soldiers.children[i], "x").listen();
 			gui.add(this.soldiers.children[i], "y").listen();
-			gui.add(this.soldiers.children[i], "startle");
+			gui.add(this.soldiers.children[i], "alert");
 			gui.add(this.soldiers.children[i], "resumePatrol");
 		}
 		for (var i = 0; i < this.raptors.length; i ++){
 			gui.addFolder("Raptor " + i);
 			gui.add(this.raptors.children[i], "x").listen();
 			gui.add(this.raptors.children[i], "y").listen();
-			gui.add(this.raptors.children[i], "startle");
+			gui.add(this.raptors.children[i], "alert");
 			gui.add(this.raptors.children[i], "resumePatrol");
 			gui.add(this.raptors.children[i], "attacking").listen();
-			gui.add(this.raptors.children[i], "startled").listen();
+			gui.add(this.raptors.children[i], "alerted").listen();
 		}
 	}
 
@@ -186,7 +186,7 @@ class Stage1 extends Phaser.State {
 
 		for(var l = 0; l < this.linesOfSight.length; l++){
 			var line = this.linesOfSight[l];
-			if (line.origin.startled) continue;
+			if (line.origin.alerted) continue;
 			
 			var intersectsWithLevel = false;
 
@@ -198,7 +198,7 @@ class Stage1 extends Phaser.State {
 			}
 			if (intersectsWithLevel) continue;
 			else {
-				if (line.origin.startled) continue;
+				if (line.origin.alerted) continue;
 
 				var detection = false;
 				var degrees = line.angle * 180/ Math.PI;
@@ -214,7 +214,7 @@ class Stage1 extends Phaser.State {
 				if (line.length > 100) detection = false;
 		
 				if (detection){
-					line.origin.startle();
+					line.origin.alert();
 				}
 				line.detection = detection;
 			}
