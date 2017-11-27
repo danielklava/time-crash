@@ -14,6 +14,10 @@ export default class Player extends Phaser.Sprite{
         this.initInput();
         this.initAudio();
 
+        this.onWall = false;
+        this.canJump = true;
+        this.hit = false;
+
         game.add.existing(this);
     }
 
@@ -42,7 +46,9 @@ export default class Player extends Phaser.Sprite{
 
     initInput (){
         this.cursors = this.game.input.keyboard.createCursorKeys();
-		this.jumpButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.jumpButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.jumpButton.onDown.add(this.jump, this);
+
         this.fireButton = this.game.input.keyboard.addKey(Phaser.KeyCode.CONTROL);
 		this.actionButton = this.game.input.keyboard.addKey(Phaser.KeyCode.SHIFT);
     }
@@ -60,39 +66,39 @@ export default class Player extends Phaser.Sprite{
     }
     
     update(){
-        /* TODO: Review jump animation
-        if (this.body.velocity.y != 0){ 
-			//this.animations.play('jump');
-        }*/
+		if (this.game.inputEnabled && !this.hit){
+            if (this.cursors.left.isDown || this.cursors.right.isDown){
+                if (this.cursors.left.isDown)
+                {
+                    this.direction = -1;
+                    
+                    this.weapon.fireAngle = Phaser.ANGLE_LEFT;
+                }
+                else if (this.cursors.right.isDown)
+                {
+                    this.direction = 1;
 
-		if (this.game.inputEnabled){
-			if (this.cursors.left.isDown)
-			{
-                this.direction = -1;
+                    this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
+                }
+
                 this.scale.x = this.direction;                
-				this.body.velocity.x = this.SPEED * this.direction;
+                this.body.velocity.x = this.SPEED * this.direction;
                 this.animations.play('run');
-                
-				this.weapon.fireAngle = Phaser.ANGLE_LEFT;
-			}
-			else if (this.cursors.right.isDown)
-			{
-                this.direction = 1;
-                this.scale.x = this.direction;                
-				this.body.velocity.x = this.SPEED * this.direction;
-                this.animations.play('run');                
 
-				this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
             }else if (this.cursors.down.isDown){
                 this.crouch();
             }
-            else {
+            else if (this.body.touching.down){
                 this.stop();
             } 
 
-			if (this.jumpButton.isDown && this.body.touching.down){
-				this.jump();
-			}
+            this.body.velocity.y = this.onWall ? 
+                50 : this.body.velocity.y;
+
+			if (this.body.touching.down){
+                this.canJump = true;
+                this.onWall = false;
+            }
 
 			if (this.fireButton.isDown){
 				this.weapon.fire();
@@ -106,9 +112,27 @@ export default class Player extends Phaser.Sprite{
         this.animations.play('crouch');
     }
 
+    hugWall(){
+        if (!this.body.touching.down && 
+            (this.body.touching.right || this.body.touching.left)){
+            this.onWall = true;
+        }
+    }
+
     jump(){
-        this.body.velocity.y = -210;
-        this.jumpSound.play();
+        if ((this.canJump && this.body.touching.down) || this.onWall){
+            this.body.velocity.y = -210;
+            this.jumpSound.play();
+
+            if (this.onWall){
+                this.scale.x *= -1;
+                this.direction *= -1;
+                this.body.velocity.x = this.direction * this.SPEED;
+            }
+
+            this.canJump = false;
+            this.onWall = false;
+        }
     }
 
     stop(){
@@ -116,8 +140,12 @@ export default class Player extends Phaser.Sprite{
         this.animations.play('idle');
     }
 
-    hit (){
-        console.log("Player hit!");
+    takeDamage (){
+        this.body.velocity.x = 15 * this.direction * -1;
+        this.hit = true;
+        this.game.time.events.add(Phaser.Timer.SECOND * 1, function(){
+            this.hit = false;
+        }, this);
     }
 
     die(){

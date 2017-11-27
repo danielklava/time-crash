@@ -40,7 +40,6 @@ class Preload extends Phaser.State {
 
     //CAR
     this.game.load.image('car-idle', 'assets/images/car-idle.png');
-    this.game.load.spritesheet('car-driving', 'assets/images/car-sheet.png', 70, 18, 2);
 
     //HERO
     this.game.load.atlas('hero', 'assets/images/hero_atlas.png', 'assets/images/hero_atlas.json');
@@ -63,7 +62,7 @@ class Preload extends Phaser.State {
   }
 
   create() {
-    this.state.start('Stage1', true, false);
+    this.state.start('GameTitle', true, false);
   }
 }
 

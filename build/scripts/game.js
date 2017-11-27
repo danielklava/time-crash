@@ -132,6 +132,7 @@ var DialogBox = function (_Phaser$Sprite) {
 		key: 'init',
 		value: function init() {
 			this.dialog = this.game.add.sprite(this.x, this.y, 'dialog');
+			this.dialog.scale.x = this.game.width / 144;
 			this.dialog.fixedToCamera = true;
 
 			this.dialog.alignIn(this.game.world.bounds, Phaser.CENTER);
@@ -452,6 +453,10 @@ var Player = function (_Phaser$Sprite) {
         _this.initInput();
         _this.initAudio();
 
+        _this.onWall = false;
+        _this.canJump = true;
+        _this.hit = false;
+
         game.add.existing(_this);
         return _this;
     }
@@ -487,6 +492,8 @@ var Player = function (_Phaser$Sprite) {
         value: function initInput() {
             this.cursors = this.game.input.keyboard.createCursorKeys();
             this.jumpButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+            this.jumpButton.onDown.add(this.jump, this);
+
             this.fireButton = this.game.input.keyboard.addKey(Phaser.KeyCode.CONTROL);
             this.actionButton = this.game.input.keyboard.addKey(Phaser.KeyCode.SHIFT);
         }
@@ -506,34 +513,32 @@ var Player = function (_Phaser$Sprite) {
     }, {
         key: 'update',
         value: function update() {
-            /* TODO: Review jump animation
-            if (this.body.velocity.y != 0){ 
-            //this.animations.play('jump');
-            }*/
+            if (this.game.inputEnabled && !this.hit) {
+                if (this.cursors.left.isDown || this.cursors.right.isDown) {
+                    if (this.cursors.left.isDown) {
+                        this.direction = -1;
 
-            if (this.game.inputEnabled) {
-                if (this.cursors.left.isDown) {
-                    this.direction = -1;
+                        this.weapon.fireAngle = Phaser.ANGLE_LEFT;
+                    } else if (this.cursors.right.isDown) {
+                        this.direction = 1;
+
+                        this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
+                    }
+
                     this.scale.x = this.direction;
                     this.body.velocity.x = this.SPEED * this.direction;
                     this.animations.play('run');
-
-                    this.weapon.fireAngle = Phaser.ANGLE_LEFT;
-                } else if (this.cursors.right.isDown) {
-                    this.direction = 1;
-                    this.scale.x = this.direction;
-                    this.body.velocity.x = this.SPEED * this.direction;
-                    this.animations.play('run');
-
-                    this.weapon.fireAngle = Phaser.ANGLE_RIGHT;
                 } else if (this.cursors.down.isDown) {
                     this.crouch();
-                } else {
+                } else if (this.body.touching.down) {
                     this.stop();
                 }
 
-                if (this.jumpButton.isDown && this.body.touching.down) {
-                    this.jump();
+                this.body.velocity.y = this.onWall ? 50 : this.body.velocity.y;
+
+                if (this.body.touching.down) {
+                    this.canJump = true;
+                    this.onWall = false;
                 }
 
                 if (this.fireButton.isDown) {
@@ -549,10 +554,28 @@ var Player = function (_Phaser$Sprite) {
             this.animations.play('crouch');
         }
     }, {
+        key: 'hugWall',
+        value: function hugWall() {
+            if (!this.body.touching.down && (this.body.touching.right || this.body.touching.left)) {
+                this.onWall = true;
+            }
+        }
+    }, {
         key: 'jump',
         value: function jump() {
-            this.body.velocity.y = -210;
-            this.jumpSound.play();
+            if (this.canJump && this.body.touching.down || this.onWall) {
+                this.body.velocity.y = -210;
+                this.jumpSound.play();
+
+                if (this.onWall) {
+                    this.scale.x *= -1;
+                    this.direction *= -1;
+                    this.body.velocity.x = this.direction * this.SPEED;
+                }
+
+                this.canJump = false;
+                this.onWall = false;
+            }
         }
     }, {
         key: 'stop',
@@ -561,9 +584,13 @@ var Player = function (_Phaser$Sprite) {
             this.animations.play('idle');
         }
     }, {
-        key: 'hit',
-        value: function hit() {
-            console.log("Player hit!");
+        key: 'takeDamage',
+        value: function takeDamage() {
+            this.body.velocity.x = 15 * this.direction * -1;
+            this.hit = true;
+            this.game.time.events.add(Phaser.Timer.SECOND * 1, function () {
+                this.hit = false;
+            }, this);
         }
     }, {
         key: 'die',
@@ -955,7 +982,7 @@ var Boot = function (_Phaser$State) {
 exports.default = Boot;
 
 },{}],9:[function(require,module,exports){
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
@@ -999,7 +1026,7 @@ var GameTitle = function (_Phaser$State) {
 	}
 
 	_createClass(GameTitle, [{
-		key: 'create',
+		key: "create",
 		value: function create() {
 
 			this.createBackground();
@@ -1013,7 +1040,7 @@ var GameTitle = function (_Phaser$State) {
 			this.themeMusic.play();
 		}
 	}, {
-		key: 'update',
+		key: "update",
 		value: function update() {
 			this.updateBackground();
 
@@ -1022,25 +1049,55 @@ var GameTitle = function (_Phaser$State) {
 			}
 		}
 	}, {
-		key: 'addMenuOptions',
+		key: "addMenuOptions",
 		value: function addMenuOptions() {
-			this.menuStart = this.game.add.button(this.game.world.right - 40, this.game.world.bottom - 10, 'menu-start', this.startCallback, this, 2, 1, 0);
-			this.menuStart.inputEnabled = true;
-			this.menuStart.events.onInputDown.add(this.startCallback, this);
+			this.startText = this.game.add.bitmapText(this.game.world.right - 40, this.game.world.bottom - 10, "font", "Start", 8);
+			this.startText.inputEnabled = true;
+			this.startText.events.onInputDown.add(this.startCallback, this);
 		}
 	}, {
-		key: 'createActors',
+		key: "createActors",
 		value: function createActors() {
-			this.car = this.game.add.sprite(-100, 54, 'car-driving');
-			this.car.animations.add('drive');
-			this.car.animations.play('drive', 5, true);
+			this.car = this.game.add.sprite(0, 49, 'car-idle');
+			//this.car.animations.add('drive');
+			//this.car.animations.play('drive', 5, true);
 
-			this.add.tween(this.car).to({ x: 7, y: 55 }, 2000, Phaser.Easing.Cubic.InOut, true, 1, 1000, true);
+			this.add.tween(this.car).to({ x: 13, y: 50 }, 2000, Phaser.Easing.Cubic.InOut, true, 0, Number.MAX_VALUE, true);
 
 			this.gameTitle = this.game.add.sprite(30, 0, 'gameTitle');
 		}
 	}, {
-		key: 'createBackground',
+		key: "startCallback",
+		value: function startCallback() {
+			this.spacebarButton.enabled = false;
+			this.enterButton.enabled = false;
+			this.startText.inputEnabled = false;
+
+			this.hideTitle = this.add.tween(this.gameTitle).to({ alpha: 0 }, 2000, Phaser.Easing.Linear.None, false, 0, 0, false);
+			this.hideTitle.onComplete.add(this.introMoveCar, this);
+			this.hideTitle.start();
+		}
+	}, {
+		key: "introMoveCar",
+		value: function introMoveCar() {
+			this.carLeaves = this.add.tween(this.car).to({ x: 300 }, 3000, Phaser.Easing.Cubic.InOut, false, 0, 0, false);
+			this.carLeaves.onComplete.add(this.fadeOut, this);
+			this.carLeaves.start();
+		}
+	}, {
+		key: "fadeOut",
+		value: function fadeOut() {
+			this.car.visible = false;
+			this.camera.fade("#000000", 500);
+			this.camera.onFadeComplete.add(this.beginGame, this);
+		}
+	}, {
+		key: "beginGame",
+		value: function beginGame() {
+			this.state.start('Stage1');
+		}
+	}, {
+		key: "createBackground",
 		value: function createBackground() {
 			this.game.stage.backgroundColor = "#000";
 
@@ -1053,33 +1110,7 @@ var GameTitle = function (_Phaser$State) {
 			this.road = this.game.add.tileSprite(0, (this.game.height - this.game.cache.getImage('road').height) / 2, this.game.width, this.game.cache.getImage('road').height, 'road');
 		}
 	}, {
-		key: 'startCallback',
-		value: function startCallback() {
-			this.hideTitle = this.add.tween(this.gameTitle).to({ alpha: 0 }, 2000, Phaser.Easing.Linear.None, false, 0, 0, false);
-			this.hideTitle.onComplete.add(this.introMoveCar, this);
-			this.hideTitle.start();
-		}
-	}, {
-		key: 'introMoveCar',
-		value: function introMoveCar() {
-			this.carLeaves = this.add.tween(this.car).to({ x: 200 }, 2000, Phaser.Easing.Cubic.InOut, false, 0, 0, false);
-			this.carLeaves.onComplete.add(this.fadeOut, this);
-			this.carLeaves.start();
-		}
-	}, {
-		key: 'fadeOut',
-		value: function fadeOut() {
-			this.car.visible = false;
-			this.camera.fade("#000000", 500);
-			this.camera.onFadeComplete.add(this.beginGame, this);
-		}
-	}, {
-		key: 'beginGame',
-		value: function beginGame() {
-			this.state.start('Stage1');
-		}
-	}, {
-		key: 'updateBackground',
+		key: "updateBackground",
 		value: function updateBackground() {
 			this.background.tilePosition.x -= 0.02;
 			this.clouds.tilePosition.x -= 0.01;
@@ -1168,7 +1199,6 @@ var Preload = function (_Phaser$State) {
 
       //CAR
       this.game.load.image('car-idle', 'assets/images/car-idle.png');
-      this.game.load.spritesheet('car-driving', 'assets/images/car-sheet.png', 70, 18, 2);
 
       //HERO
       this.game.load.atlas('hero', 'assets/images/hero_atlas.png', 'assets/images/hero_atlas.json');
@@ -1192,7 +1222,7 @@ var Preload = function (_Phaser$State) {
   }, {
     key: 'create',
     value: function create() {
-      this.state.start('Stage1', true, false);
+      this.state.start('GameTitle', true, false);
     }
   }]);
 
@@ -1279,7 +1309,7 @@ var Stage1 = function (_Phaser$State) {
 			this.adjustStageWorld(this.STAGE_LENGTH);
 
 			this.camera.flash("#000000");
-			this.game.inputEnabled = true; //TODO revert to false;
+			this.game.inputEnabled = false; //TODO revert to false;
 
 			//Enble Arcade Physics
 			this.physics.startSystem(Phaser.Physics.ARCADE);
@@ -1311,6 +1341,10 @@ var Stage1 = function (_Phaser$State) {
 			this.createLinesOfSight(this.raptors);
 
 			var gui = new dat.GUI();
+			gui.addFolder("Player");
+			gui.add(this.hero, "canJump").listen();
+			gui.add(this.hero, "onWall").listen();
+
 			for (var i = 0; i < this.soldiers.length; i++) {
 				gui.addFolder("Soldier " + i);
 				gui.add(this.soldiers.children[i], "x").listen();
@@ -1351,7 +1385,7 @@ var Stage1 = function (_Phaser$State) {
 	}, {
 		key: 'addDialogText',
 		value: function addDialogText(speaker, sentence) {
-			this.game.inputEnabled = true;
+			this.game.inputEnabled = false;
 			this.hero.stop();
 
 			var offsetX = this.game.camera.x;
@@ -1387,6 +1421,7 @@ var Stage1 = function (_Phaser$State) {
 			this.ground = this.add.tileSprite(0, this.game.world.bounds.height - 10, this.game.world.width, 10, 'ground');
 
 			this.hero = new _Player2.default(this.game, 70, this.getObjectPositionAboveGround('hero'), 'hero');
+			this.hero.alpha = 0;
 			this.hero.y = this.getGroundPositionY() - this.hero.height;
 
 			this.car = this.game.add.sprite(-100, this.getObjectPositionAboveGround('car-idle') + 3, 'car-idle');
@@ -1511,7 +1546,7 @@ var Stage1 = function (_Phaser$State) {
 
 			//Collision events
 			this.physics.arcade.collide(this.hero, this.ground);
-			this.physics.arcade.collide(this.hero, this.objects);
+			this.physics.arcade.collide(this.hero, this.objects, this.collideWithObject, null, this);
 			//this.physics.arcade.collide(this.hero, this.raptors, this.restartStage, null, this);
 
 			this.physics.arcade.collide(this.objects, this.raptors, this.enemyHitWall);
@@ -1525,6 +1560,14 @@ var Stage1 = function (_Phaser$State) {
 			}
 
 			this.updateEnemies();
+		}
+	}, {
+		key: 'collideWithObject',
+		value: function collideWithObject(hero, object) {
+
+			if (hero instanceof _Player2.default) {
+				hero.hugWall();
+			}
 		}
 	}, {
 		key: 'startEventLab',
@@ -1556,7 +1599,8 @@ var Stage1 = function (_Phaser$State) {
 				target.die();
 			}
 			if (target instanceof _Player2.default) {
-				target.hit();
+				console.log(target);
+				//target.takeDamage();
 			}
 		}
 	}, {
@@ -1615,6 +1659,9 @@ var Stage1 = function (_Phaser$State) {
 				}
 				for (var i = 0; i < this.raptors.length; i++) {
 					this.game.debug.body(this.raptors.children[i]);
+				}
+				for (var i = 0; i < this.objects.length; i++) {
+					this.game.debug.body(this.objects.children[i]);
 				}
 
 				for (var l = 0; l < this.linesOfSight.length; l++) {

@@ -14,7 +14,7 @@ class Stage1 extends Phaser.State {
 		this.adjustStageWorld(this.STAGE_LENGTH);
 		
 		this.camera.flash("#000000");
-		this.game.inputEnabled = true;//TODO revert to false;
+		this.game.inputEnabled = false;//TODO revert to false;
 
 		//Enble Arcade Physics
 		this.physics.startSystem(Phaser.Physics.ARCADE);
@@ -45,7 +45,12 @@ class Stage1 extends Phaser.State {
 		this.createLinesOfSight(this.soldiers);
 		this.createLinesOfSight(this.raptors);		
 
+
 		var gui = new dat.GUI();
+		gui.addFolder("Player");
+		gui.add(this.hero, "canJump").listen();
+		gui.add(this.hero, "onWall").listen();
+
 		for (var i = 0; i < this.soldiers.length; i ++){
 			gui.addFolder("Soldier " + i);
 			gui.add(this.soldiers.children[i], "x").listen();
@@ -82,7 +87,7 @@ class Stage1 extends Phaser.State {
 	 * @param sentence The string sentence that will be printed character by character.
 	 */
 	addDialogText(speaker, sentence){
-		this.game.inputEnabled = true;
+		this.game.inputEnabled = false;
 		this.hero.stop();
 		
 		var offsetX = this.game.camera.x;
@@ -110,6 +115,7 @@ class Stage1 extends Phaser.State {
   		this.ground = this.add.tileSprite(0, this.game.world.bounds.height - 10  ,this.game.world.width, 10, 'ground');
 
 		this.hero = new Player(this.game, 70, this.getObjectPositionAboveGround('hero'), 'hero');
+		this.hero.alpha = 0;
 		this.hero.y = this.getGroundPositionY() - this.hero.height;
 		
 		this.car = this.game.add.sprite(-100, this.getObjectPositionAboveGround('car-idle') + 3,'car-idle');
@@ -173,7 +179,7 @@ class Stage1 extends Phaser.State {
 	    this.ground.body.allowGravity = false;
 
   	}
-  	adjustCamera(){
+  	adjustCamera (){
 		this.camera.follow(this.hero);  
 	}
 	interactComputer (){
@@ -181,7 +187,7 @@ class Stage1 extends Phaser.State {
 
 		return;
 	}
-	update() {
+	update () {
 		this.linesOfSight.forEach(function(l){l.fromSprite(l.origin, l.target)});
 
 		for(var l = 0; l < this.linesOfSight.length; l++){
@@ -234,7 +240,7 @@ class Stage1 extends Phaser.State {
 		
 		//Collision events
 		this.physics.arcade.collide(this.hero, this.ground);
-		this.physics.arcade.collide(this.hero, this.objects);
+		this.physics.arcade.collide(this.hero, this.objects, this.collideWithObject, null, this);
 		//this.physics.arcade.collide(this.hero, this.raptors, this.restartStage, null, this);
 		
 		this.physics.arcade.collide(this.objects, this.raptors, this.enemyHitWall);
@@ -253,6 +259,12 @@ class Stage1 extends Phaser.State {
 		}
 
 		this.updateEnemies();
+	}
+	collideWithObject (hero, object){
+
+		if (hero instanceof Player){
+			hero.hugWall();
+		}
 	}
 	startEventLab (){
 		this.addDialogText("Selene", "This is it.");
@@ -276,7 +288,8 @@ class Stage1 extends Phaser.State {
 			target.die();
 		}
 		if (target instanceof Player){
-			target.hit();
+			console.log(target);
+			//target.takeDamage();
 		}
 	}
 	createBackground(stageLength){
@@ -331,6 +344,9 @@ class Stage1 extends Phaser.State {
 			}
 			for(var i = 0; i < this.raptors.length; i++){
 				this.game.debug.body(this.raptors.children[i]);
+			}
+			for(var i = 0; i < this.objects.length; i++){
+				this.game.debug.body(this.objects.children[i]);
 			}
 
 			for(var l = 0; l < this.linesOfSight.length; l++){

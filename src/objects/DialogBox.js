@@ -16,6 +16,7 @@ export default class DialogBox extends Phaser.Sprite{
 	
 	init(){
 		this.dialog = this.game.add.sprite(this.x, this.y, 'dialog');
+		this.dialog.scale.x = this.game.width / 144;	
 		this.dialog.fixedToCamera = true;
 
 		this.dialog.alignIn(this.game.world.bounds, Phaser.CENTER);
